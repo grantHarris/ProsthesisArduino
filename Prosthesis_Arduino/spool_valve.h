@@ -6,12 +6,18 @@
 class SpoolValve
 {
   public:
-    SpoolValve(int channelAPin, int channelBPin);
+    SpoolValve(int channelAPin, int channelBPin, int aInputPin, int bInputPin);
     void Update();
+    void Dither();
     
   private:
     int mChannelAPin;
+    int mAInputPin;
+    int mChannelAValue;
+    
     int mChannelBPin;
+    int mBInputPin;
+    int mChannelBValue;
 };
 
 #endif
