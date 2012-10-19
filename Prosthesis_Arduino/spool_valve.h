@@ -6,7 +6,7 @@
 class SpoolValve
 {
   public:
-    SpoolValve(int channelAPin, int channelBPin, int aInputPin, int bInputPin);
+    SpoolValve(int channelAPin, int channelBPin, int aInputPin, int bInputPin, int ditherRange);
     void Update();
     void Dither();
     
@@ -18,6 +18,9 @@ class SpoolValve
     int mChannelBPin;
     int mBInputPin;
     int mChannelBValue;
+    
+    int mDitherRange;
+    int mDitherValue;
 };
 
 #endif

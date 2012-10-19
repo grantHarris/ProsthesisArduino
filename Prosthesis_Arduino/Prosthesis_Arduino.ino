@@ -1,14 +1,17 @@
 #include <MsTimer2.h>
 
+#include "GlobalConstants.h"
 #include "spool_valve.h"
 
-
-const int kChannelAOutPin =  9;      // the number of the LED pin
+//Pin constants
+const int kChannelAOutPin =  9; 
 const int kChannelBOutPin = 10;
 const int kChannelAInputPin = 0;
 const int kChannelBInputPin = 1;
 
-SpoolValve LeftLeg = SpoolValve(kChannelAOutPin, kChannelBOutPin, kChannelAInputPin, kChannelBInputPin);
+const int kDitherRange = 3;
+
+SpoolValve LeftLeg = SpoolValve(kChannelAOutPin, kChannelBOutPin, kChannelAInputPin, kChannelBInputPin, kDitherRange);
 
 void setup() 
 {
@@ -24,6 +27,7 @@ void Dither10Hz()
 
 void loop()
 {
-    LeftLeg.Update();
+  LeftLeg.Update();
 }
+
 

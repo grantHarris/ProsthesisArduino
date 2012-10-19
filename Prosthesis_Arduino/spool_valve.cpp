@@ -2,12 +2,14 @@
 
 const int inputDeadZone = 190;
 
-SpoolValve::SpoolValve(int channelAPin, int channelBPin, int aInputPin, int bInputPin)
+SpoolValve::SpoolValve(int channelAPin, int channelBPin, int aInputPin, int bInputPin, int ditherRange)
 : 
 mChannelAPin(channelAPin),
 mChannelBPin(channelBPin),
 mAInputPin(aInputPin),
-mBInputPin(bInputPin) {}
+mBInputPin(bInputPin),
+mDitherValue(0),
+mDitherRange(ditherRange) {}
 
 void SpoolValve::Update()
 {
@@ -19,13 +21,13 @@ void SpoolValve::Update()
     {
       mChannelAValue = 0;
       mChannelBValue -= inputDeadZone;
-      mChannelBValue = max(0, (float)255 * (float)mChannelBValue / ((float)1024 - (float)inputDeadZone));
+      mChannelBValue = constrain(((float)255 * (float)mChannelBValue / ((float)1024 - (float)inputDeadZone))+ mDitherValue, 0, 255);
     }
     else if (mChannelBValue <= inputDeadZone)
     {
       mChannelBValue = 0; 
       mChannelAValue -= inputDeadZone;
-      mChannelAValue = max(0, (float)255 * (float)mChannelAValue / ((float)1024 - (float)inputDeadZone));
+      mChannelAValue = constrain(((float)255 * (float)mChannelAValue / ((float)1024 - (float)inputDeadZone)) + mDitherValue, 0, 255);
     }
     
     analogWrite(mChannelAPin, mChannelAValue);
@@ -38,15 +40,7 @@ void SpoolValve::Update()
 
 void SpoolValve::Dither()
 {
-  if (mChannelAValue > 0)
-  {
-    analogWrite(mChannelAPin, constrain(mChannelAValue + random(-3,3), 0, 255));
-  }
-  else if (mChannelBValue > 0)
-  {
-    analogWrite(mChannelAPin, constrain(mChannelBValue + random(-3,3), 0, 255));    
-  }
-  
+  mDitherValue = random(-mDitherRange, mDitherRange);
 }
 
 
