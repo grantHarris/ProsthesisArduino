@@ -9,7 +9,7 @@ class MotorController
   
   public:
   
-    MotorController(PID PIDControl, int SensorPin, int MotorPin, int SetpointPin, int KpPin, int KiPin, int KdPin, float Kp, float Ki, float Kd, float dt);
+    MotorController(PID PIDControl, int SensorPin, int MotorPin, int SetpointPin, int KpPin, int KiPin, int KdPin, float dt);
     
     void Iterate();
     
@@ -23,13 +23,6 @@ class MotorController
     int mKpPin;
     int mKiPin;
     int mKdPin;
-    float mKp;
-    float mKi;
-    float mKd;
     float mdt;
-    float mPressure;
-    
-
-
 };
 #endif __MOTOR_CONTROLLER_H_
