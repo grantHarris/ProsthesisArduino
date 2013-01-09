@@ -9,19 +9,26 @@ class MotorController
   
   public:
   
-    //Constants
-  
-  
-    //Functions
-  
-  
-  
-    //Simple Display Functions
-  
-  
+    MotorController(PID PIDControl, int SensorPin, int MotorPin, int SetpointPin, int KpPin, int KiPin, int KdPin, float Kp, float Ki, float Kd, float dt);
+    
+    void Iterate();
+    
+    
   
   private:
-  
+    PID mPIDControl;
+    int mSensorPin;
+    int mMotorPin;
+    int mSetpointPin;
+    int mKpPin;
+    int mKiPin;
+    int mKdPin;
+    float mKp;
+    float mKi;
+    float mKd;
+    float mdt;
+    float mPressure;
+    
 
 
 };
