@@ -1,7 +1,7 @@
 #include "Motor_Controller.h"
 
 MotorController::MotorController(int SensorPin, int MotorPin, int SetpointPin, int KpPin, int KiPin, int KdPin, float Kp, float Ki, float Kd, float dt, float Input, float Output, float Setpoint)
-: mPIDControl(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT)
+: mPIDControl(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT),
 mSensorPin(SensorPin),
 mMotorPin(MotorPin),
 mSetpointPin(SetpointPin),
