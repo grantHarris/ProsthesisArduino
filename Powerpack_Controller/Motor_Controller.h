@@ -11,7 +11,7 @@ class MotorController
   
     MotorController(PID PIDControl, int SensorPin, int MotorPin, int SetpointPin, int KpPin, int KiPin, int KdPin, float dt);
     
-    void Initialize();
+    void Update();
     
     void Iterate();
     
