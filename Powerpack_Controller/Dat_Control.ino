@@ -5,6 +5,7 @@ Thomas Watanabe
 Acknowledgements: PID Library by Brett Beauregard
 */
 
+#include <PID_v1.h>
 #include <Motor_Controller.h>
 
 MotorController MyController(0, 10, 2, 3, 4, 5, 0, 0, 0, 10, 0, 0, 0);
