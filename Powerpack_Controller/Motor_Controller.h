@@ -34,7 +34,7 @@ class MotorController
     float mOutput;
     float mSetpoint;
     
-    PID mPIDControl;
+    PID mPIDControl(&mInput, &mOutput, &mSetpoint, mKp, mKi, mKd, DIRECT);
 
 };
 #endif __MOTOR_CONTROLLER_H_
