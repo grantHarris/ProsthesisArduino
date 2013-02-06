@@ -11,9 +11,11 @@ class MotorController
   
     MotorController(PID PIDControl, int SensorPin, int MotorPin, int SetpointPin, int KpPin, int KiPin, int KdPin, float dt);
     
+    void Initialize();
+    
     void Iterate();
     
-    
+    float GetPressure();
   
   private:
     PID mPIDControl;
@@ -23,6 +25,7 @@ class MotorController
     int mKpPin;
     int mKiPin;
     int mKdPin;
+    float mPressure;
     float mdt;
 };
 #endif __MOTOR_CONTROLLER_H_
