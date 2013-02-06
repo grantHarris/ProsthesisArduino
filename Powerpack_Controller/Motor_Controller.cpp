@@ -16,6 +16,12 @@ mInput(Input),
 mSetpoint(Setpoint),
 mOutput(Output){}
 
+void MotorController::Initialize()
+{
+    mPIDControl.SetMode(AUTOMATIC);
+    mPIDControl.SetSampleTime(mdt);
+}
+
 void MotorController::Iterate()
 {
   mKp = analogRead(mKpPin)/50.0;
