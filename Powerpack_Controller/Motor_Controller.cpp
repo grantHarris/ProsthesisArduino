@@ -1,8 +1,7 @@
 #include "Motor_Controller.h"
 
-MotorController::MotorController(int TargetPin, int SensorPin, int MotorPin, int SetpointPin, int KpPin, int KiPin, int KdPin, float Kp, float Ki, float Kd, float dt, float Input, float Output, float Setpoint)
+MotorController::MotorController(int SensorPin, int MotorPin, int SetpointPin, int KpPin, int KiPin, int KdPin, float Kp, float Ki, float Kd, float dt, float Input, float Output, float Setpoint)
 :
-mTargetPin(TargetPin),
 mSensorPin(SensorPin),
 mMotorPin(MotorPin),
 mSetpointPin(SetpointPin),
@@ -25,7 +24,7 @@ void MotorController::Iterate()
   mPIDControl.SetTunings(mKp, mKi, mKd);
   
   mInput = GetPressure();
-  mSetpoint = analogRead(mTargetPin)*4.8875/2.0;
+  mSetpoint = analogRead(mSetpointPin)*4.8875/2.0;
   
   mPIDControl.Compute();
   analogWrite(mMotorPin, mOutput);
