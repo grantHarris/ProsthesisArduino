@@ -11,6 +11,8 @@ class MotorController
   
     MotorController(int SensorPin, int MotorPin, int SetpointPin, int KpPin, int KiPin, int KdPin, float Kp, float Ki, float Kd, float dt, float mInput, float mOutput, float mSetpoint);
     
+    void Initialize();
+    
     void Iterate();
     
     float GetPressure();
