@@ -1,0 +1,5 @@
+C:\Users\Francesco\Desktop\Enph 459\fingerprint\Fingerprint\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\Francesco\Desktop\Enph 459\fingerprint\Fingerprint\bin\Debug\Fingerprint.dll
+C:\Users\Francesco\Desktop\Enph 459\fingerprint\Fingerprint\bin\Debug\Fingerprint.pdb
+C:\Users\Francesco\Desktop\Enph 459\fingerprint\Fingerprint\obj\Debug\Fingerprint.dll
+C:\Users\Francesco\Desktop\Enph 459\fingerprint\Fingerprint\obj\Debug\Fingerprint.pdb
