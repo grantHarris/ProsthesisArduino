@@ -16,6 +16,13 @@ mInput(Input),
 mSetpoint(Setpoint),
 mOutput(Output){}
 
+const MotorController::PID_Pot_Sensitivity = .02;
+const MotorController::Setpoint_Pot_Sensitivity = 2.44375;
+const MotorController::Pressure_Sample_Count = 20.0;
+const MotorController::Pressure_Sensitivity = 2500.0;
+const MotorController::Pressure_Intercept = 1230.0;
+const MotorController::Analog_to_Voltage = 0.004887586;
+
 void MotorController::Initialize()
 {
     mPIDControl.SetMode(AUTOMATIC);
@@ -24,13 +31,13 @@ void MotorController::Initialize()
 
 void MotorController::Iterate()
 {
-  mKp = analogRead(mKpPin)/50.0;
-  mKi = analogRead(mKiPin)/50.0;
-  mKd = analogRead(mKdPin)/50.0;
+  mKp = analogRead(mKpPin)*PID_Pot_Sensitivity;
+  mKi = analogRead(mKiPin)*PID_Pot_Sensitivity;
+  mKd = analogRead(mKdPin)*PID_Pot_Sensitivity;
   mPIDControl.SetTunings(mKp, mKi, mKd);
   
   mInput = GetPressure();
-  mSetpoint = analogRead(mSetpointPin)*4.8875/2.0;
+  mSetpoint = analogRead(mSetpointPin)*Setpoint_Pot_Sensitivity;
   
   mPIDControl.Compute();
   analogWrite(mMotorPin, mOutput);
@@ -39,9 +46,9 @@ void MotorController::Iterate()
 float MotorController::GetPressure()
 {
   int volt_sum = 0;
-  for(int i=0, i<20, i++){
+  for(int i=0, i<int(Pressure_Sample_Count), i++){
     volt_sum = volt_sum + analogRead(mSensorPin);
   }
   
-  return (volt_sum/20.0)*(5.0/1023.0)*2*1250-1230;
+  return (volt_sum/Pressure_Sample_Count)*Pressure_Sensitivity*Analog_to_Voltage-Pressure_Intercept;
 }
