@@ -35,6 +35,14 @@ class MotorController
     float mSetpoint;
     
     PID mPIDControl;
+    
+    //conversion constants
+    static const double PID_Pot_Sensitivity;
+    static const double Setpoint_Pot_Sensitivity;
+    static const double Pressure_Sample_Count; //double instead of int to avoid integer division
+    static const double Pressure_Sensitivity;
+    static const double Pressure_Intercept;
+    static const double Analog_to_Voltage;
 
 };
 #endif __MOTOR_CONTROLLER_H_
