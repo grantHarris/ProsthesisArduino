@@ -1,8 +1,11 @@
 int PlusPin = 1;
 int MinusPin = 2;
 int Value = 5;
-double StartTime;
+int StartTime;
 bool FastMode = FALSE;
+
+const int SingleTime = 500;
+const int RapidTime = 100;
 
 void setup() {
   Serial.begin(9600);
@@ -16,18 +19,21 @@ void loop() {
   if( DigitalRead(PlusPin) == HIGH ) {
     Value++;
     StartTime = millis();
+    Serial.println("Value = %i", Value)
     while( DigitalRead(PlusPin) == HIGH ) {
       if( !FastMode ) {
-        if( StartTime - millis() > 500 ) {
+        if( StartTime - millis() > SingleTime ) {
           Value++;
           StartTime = millis();
           FastMode = TRUE;
+          Serial.println("Value = %i", Value)
         }
       }
       else {
-        if( StartTime - millis() > 100 ) {
+        if( StartTime - millis() > RapidTime ) {
         Value++;
         StartTime = millis();
+        Serial.println("Value = %i", Value)
         }
       }
     }
@@ -37,21 +43,25 @@ void loop() {
   if( DigitalRead(MinusPin) == HIGH ) {
     Value++;
     StartTime = millis();
+    Serial.println("Value = %i", Value)
+
     while( DigitalRead(MinusPin) == HIGH ) {
       if( !FastMode ) {
-        if( StartTime - millis() > 500 ) {
+        if( StartTime - millis() > SingleTime ) {
           Value--;
           StartTime = millis();
           FastMode = TRUE;
+          Serial.println("Value = %i", Value)
         }
       }
       else {
-        if( StartTime - millis() > 100 ) {
+        if( StartTime - millis() > RapidTime ) {
         Value--;
         StartTime = millis();
+        Serial.println("Value = %i", Value)
         }
       }
     }
     FastMode = FALSE;
   }
-
+}
