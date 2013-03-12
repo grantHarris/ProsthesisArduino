@@ -1,8 +1,8 @@
-int PlusPin = 1;
-int MinusPin = 2;
-int Value = 5;
+int PlusPin = 22;
+int MinusPin = 23;
+int Value = 0;
 int StartTime;
-bool FastMode = FALSE;
+bool FastMode = false;
 
 const int SingleTime = 500;
 const int RapidTime = 100;
@@ -12,56 +12,56 @@ void setup() {
 }
 
 void loop() {
-//emulates delayed hold faster increase
-//pressing the button normally will increase value by 1
-//holding button for longer than 1/2 second will increase by 1 again for each .1 second it is held (beyond 1/2 second)
+  //emulates delayed hold faster increase
+  //pressing the button normally will increase value by 1
+  //holding button for longer than 1/2 second will increase by 1 again for each .1 second it is held (beyond 1/2 second)
 
-  if( DigitalRead(PlusPin) == HIGH ) {
+  if( digitalRead(PlusPin) == HIGH ) {
     Value++;
     StartTime = millis();
-    Serial.println("Value = %i", Value)
-    while( DigitalRead(PlusPin) == HIGH ) {
+    Serial.println(Value);
+    while( digitalRead(PlusPin) == HIGH ) {
       if( !FastMode ) {
         if( StartTime - millis() > SingleTime ) {
           Value++;
           StartTime = millis();
-          FastMode = TRUE;
-          Serial.println("Value = %i", Value)
+          FastMode = true;
+          Serial.println(Value);
         }
       }
       else {
         if( StartTime - millis() > RapidTime ) {
-        Value++;
-        StartTime = millis();
-        Serial.println("Value = %i", Value)
+          Value++;
+          StartTime = millis();
+          Serial.println(Value);
         }
       }
     }
-    FastMode = FALSE;
+    FastMode = false;
   }
 
-  if( DigitalRead(MinusPin) == HIGH ) {
+  if( digitalRead(MinusPin) == HIGH ) {
     Value++;
     StartTime = millis();
-    Serial.println("Value = %i", Value)
+    Serial.println(Value);
 
-    while( DigitalRead(MinusPin) == HIGH ) {
+    while( digitalRead(MinusPin) == HIGH ) {
       if( !FastMode ) {
         if( StartTime - millis() > SingleTime ) {
           Value--;
           StartTime = millis();
-          FastMode = TRUE;
-          Serial.println("Value = %i", Value)
+          FastMode = true;
+          Serial.println(Value);
         }
       }
       else {
         if( StartTime - millis() > RapidTime ) {
-        Value--;
-        StartTime = millis();
-        Serial.println("Value = %i", Value)
+          Value--;
+          StartTime = millis();
+          Serial.println(Value);
         }
       }
     }
-    FastMode = FALSE;
+    FastMode = false;
   }
 }
