@@ -9,13 +9,13 @@ class MotorController
   
   public:
   
-    MotorController(int SensorPin, int MotorPin, int SetpointPin, int KpPin, int KiPin, int KdPin, float Kp, float Ki, float Kd, float dt, float mInput, float mOutput, float mSetpoint);
+    MotorController(int SensorPin, int MotorPin, int SetpointPin, int KpPin, int KiPin, int KdPin, double Kp, double Ki, double Kd, double dt, double mInput, double mOutput, double mSetpoint);
     
     void Initialize();
     
     void Iterate();
     
-    float GetPressure();
+    double GetPressure();
     
   private:
     int mSensorPin;
@@ -24,15 +24,15 @@ class MotorController
     int mKpPin;
     int mKiPin;
     int mKdPin;
-    float mKp;
-    float mKi;
-    float mKd;
-    float mPressure;
-    float mdt;
+    double mKp;
+    double mKi;
+    double mKd;
+    double mPressure;
+    double mdt;
 
-    float mInput;
-    float mOutput;
-    float mSetpoint;
+    double mInput;
+    double mOutput;
+    double mSetpoint;
     
     PID mPIDControl;
     
