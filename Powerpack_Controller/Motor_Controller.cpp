@@ -44,16 +44,16 @@ void MotorController::Iterate()
     mPIDControl.SetTunings(mKp, mKi, mKd);
   }
   
-  if(digitalRead(ModePin) == HIGH)
+  if(digitalRead(mModePin) == HIGH)
   {
-    mSetpoint = GetPressure(LoadSensePressurePin) + mLoadSenseOffset;
+    mSetpoint = GetPressure(mLoadSensePressurePin) + mLoadSenseOffset;
   }
-  if(digitalRead(ModePin) == LOW)
+  if(digitalRead(mModePin) == LOW)
   {
     mSetpoint = mNumericalSetpoint;
   }
 
-  mInput = GetPressure(InputPressurePin);
+  mInput = GetPressure(mInputPressurePin);
   mPIDControl.Compute();
   analogWrite(mMotorPin, mOutput);
 }
