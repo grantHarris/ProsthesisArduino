@@ -15,12 +15,18 @@ class MotorController
     
     void Iterate();
     
-    double GetPressure();
+    double GetPressure(int Pin);
+    
+    void SetLoadSenseOffset(double NewOffset);
+    
+    void SetNumericalSetpoint(double NewSetpoint);
     
   private:
-    int mSensorPin;
+    int mModePin;
     int mMotorPin;
-    int mSetpointPin;
+    int mInputPressurePin;
+    int mLoadSensePressurePin;
+    int mTuningBoxPin;
     int mKpPin;
     int mKiPin;
     int mKdPin;
@@ -29,6 +35,9 @@ class MotorController
     double mKd;
     double mPressure;
     double mdt;
+    
+    double mLoadSenseOffset;
+    double mNumericalSetpoint;
 
     double mInput;
     double mOutput;
