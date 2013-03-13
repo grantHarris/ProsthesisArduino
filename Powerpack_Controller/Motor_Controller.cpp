@@ -68,12 +68,12 @@ double MotorController::GetPressure(int Pin)
   return (volt_sum/Pressure_Sample_Count)*Pressure_Sensitivity*Analog_to_Voltage-Pressure_Intercept;
 }
 
-void SetLoadSenseOffset(double NewOffset)
+void MotorController::SetLoadSenseOffset(double NewOffset)
 {
   mLoadSenseOffset = NewOffset;
 }
 
-void SetNumericalSetpoint(double NewSetpoint)
+void MotorController::SetNumericalSetpoint(double NewSetpoint)
 {
   mNumericalSetpoint = NewSetpoint;
 }
