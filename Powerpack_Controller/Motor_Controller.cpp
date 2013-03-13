@@ -46,7 +46,7 @@ void MotorController::Iterate()
 float MotorController::GetPressure()
 {
   int volt_sum = 0;
-  for(int i=0, i<int(Pressure_Sample_Count), i++){
+  for(int i=0; i<int(Pressure_Sample_Count); i++){
     volt_sum = volt_sum + analogRead(mSensorPin);
   }
   
