@@ -1,6 +1,6 @@
 #include "Motor_Controller.h"
 
-MotorController::MotorController(int SensorPin, int MotorPin, int SetpointPin, int KpPin, int KiPin, int KdPin, float Kp, float Ki, float Kd, float dt, float Input, float Output, float Setpoint)
+MotorController::MotorController(int SensorPin, int MotorPin, int SetpointPin, int KpPin, int KiPin, int KdPin, double Kp, double Ki, double Kd, double dt, double Input, double Output, double Setpoint)
 : mPIDControl(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT),
 mSensorPin(SensorPin),
 mMotorPin(MotorPin),
@@ -16,12 +16,12 @@ mInput(Input),
 mSetpoint(Setpoint),
 mOutput(Output){}
 
-const MotorController::PID_Pot_Sensitivity = .02;
-const MotorController::Setpoint_Pot_Sensitivity = 2.44375;
-const MotorController::Pressure_Sample_Count = 20.0;
-const MotorController::Pressure_Sensitivity = 2500.0;
-const MotorController::Pressure_Intercept = 1230.0;
-const MotorController::Analog_to_Voltage = 0.004887586;
+const double MotorController::PID_Pot_Sensitivity = .02;
+const double MotorController::Setpoint_Pot_Sensitivity = 2.44375;
+const double MotorController::Pressure_Sample_Count = 20.0;
+const double MotorController::Pressure_Sensitivity = 2500.0;
+const double MotorController::Pressure_Intercept = 1230.0;
+const double MotorController::Analog_to_Voltage = 0.004887586;
 
 void MotorController::Initialize()
 {
@@ -43,7 +43,7 @@ void MotorController::Iterate()
   analogWrite(mMotorPin, mOutput);
 }
 
-float MotorController::GetPressure()
+double MotorController::GetPressure()
 {
   int volt_sum = 0;
   for(int i=0; i<int(Pressure_Sample_Count); i++){
