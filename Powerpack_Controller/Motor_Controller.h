@@ -9,7 +9,7 @@ class MotorController
   
   public:
   
-    MotorController(int SensorPin, int MotorPin, int SetpointPin, int KpPin, int KiPin, int KdPin, double Kp, double Ki, double Kd, double dt, double mInput, double mOutput, double mSetpoint);
+    MotorController(int SensorPin, int MotorPin, int KpPin, int KiPin, int KdPin, double Kp, double Ki, double Kd, double dt, double mInput, double mOutput, double mSetpoint);
     
     void Initialize();
     
