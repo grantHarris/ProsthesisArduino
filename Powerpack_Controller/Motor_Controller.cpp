@@ -1,10 +1,10 @@
 #include "Motor_Controller.h"
 
-MotorController::MotorController(int ModePin, int InputPressurePin, int MotorPin, int LoadSensePressurePin, int TuningBoxPin, int KpPin, int KiPin, int KdPin, double Kp, double Ki, double Kd, double dt, double LoadSenseOffset, double NumericalSetpoint, double Input, double Output, double Setpoint)
+MotorController::MotorController(int ModePin, int MotorPin, int InputPressurePin, int LoadSensePressurePin, int TuningBoxPin, int KpPin, int KiPin, int KdPin, double Kp, double Ki, double Kd, double dt, double LoadSenseOffset, double NumericalSetpoint, double Input, double Output, double Setpoint)
 : mPIDControl(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT),
 mModePin(ModePin),
-mInputPressurePin(InputPressurePin),
 mMotorPin(MotorPin),
+mInputPressurePin(InputPressurePin),
 mSetpointPin(SetpointPin),
 mLoadSensePressurePin(LoadSensePressurePin),
 mTuningBoxPin(TuningBoxPin),
