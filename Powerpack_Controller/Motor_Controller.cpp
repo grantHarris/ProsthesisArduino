@@ -5,7 +5,6 @@ MotorController::MotorController(int ModePin, int MotorPin, int InputPressurePin
 mModePin(ModePin),
 mMotorPin(MotorPin),
 mInputPressurePin(InputPressurePin),
-mSetpointPin(SetpointPin),
 mLoadSensePressurePin(LoadSensePressurePin),
 mTuningBoxPin(TuningBoxPin),
 mKpPin(KpPin),
