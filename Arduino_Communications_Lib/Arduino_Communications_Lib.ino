@@ -6,6 +6,7 @@
 template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
 
 #define COMMAND_ACK_PARAMETER_ARDUINO_ID "Ad"
+#define COMMAND_ACK_PARAMETER_TOGGLE_SUCCESS "Tg"
 #define COMMAND_PARAMAETER_TELEMETRY_PERIOD "Pd"
 
 const char* kArduinoID = "test";
@@ -73,6 +74,10 @@ aJsonObject * TelemetryEnableCb(aJsonObject *msg, bool enable)
 
 aJsonObject * InitializeDeviceCb(aJsonObject *msg, bool enable)
 {
-  return NULL;
+  //Echo initialize toggle back for the sake of example
+  aJsonObject *ackMsg = CommandProcessor::CreateCommandAckMessage();
+  aJson.addItemToObject(ackMsg, COMMAND_ACK_PARAMETER_TOGGLE_SUCCESS, aJson.createItem(enable));
+  
+  return ackMsg;
 }
 
