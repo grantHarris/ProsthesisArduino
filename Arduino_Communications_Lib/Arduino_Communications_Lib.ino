@@ -6,13 +6,15 @@
 template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
 
 #define COMMAND_ACK_PARAMETER_ARDUINO_ID "Ad"
+#define COMMAND_PARAMAETER_TELEMETRY_PERIOD "Pd"
+
 const char* kArduinoID = "test";
 
 aJsonStream serial_stream(&Serial);
 void processMessage(aJsonObject *msg);
 
-#define TELEMETRY_PERIOD_MS 50
 int lastTelem;
+int telemetryPeriodMS;
 bool telemetryEnabled = false;
 
 void setup()
@@ -22,6 +24,7 @@ void setup()
   CommandProcessor::SetEnableToggleRequestCallback(InitializeDeviceCb);
   Serial.begin(9600);
   
+  telemetryPeriodMS = 50;
   lastTelem = 0;
 }
 
@@ -42,7 +45,7 @@ void loop()
   }
 
   //Soft realtime telemetry. Who cares about missed deadlines for these? The mission critical stuff goes into the interrupt CBs
-  if (telemetryEnabled && millis() - lastTelem > TELEMETRY_PERIOD_MS)
+  if (telemetryEnabled && millis() - lastTelem > telemetryPeriodMS)
   {
     lastTelem = millis(); 
     Serial << "Telem\n";
@@ -60,6 +63,11 @@ aJsonObject * TelemetryEnableCb(aJsonObject *msg, bool enable)
 {
   //No ACK necessary for this
   telemetryEnabled = enable;
+  aJsonObject *telemPeriod = aJson.getObjectItem(msg, COMMAND_PARAMAETER_TELEMETRY_PERIOD);
+  if (telemPeriod != NULL)
+  {
+     telemetryPeriodMS = telemPeriod->valueint;
+  }
   return NULL;
 }
 
