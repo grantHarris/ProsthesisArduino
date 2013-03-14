@@ -2,6 +2,10 @@
 #include "command_processor.h"
 #include "command_packet.h"
 
+//#define DEBUG_COMMAND_PROCESSING 1
+
+template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
+
 CommandProcessor::CommandProcessor(int bufferSize)
 :
 mBufferSize(bufferSize),
@@ -31,7 +35,7 @@ bool CommandProcessor::AddChar(char data)
 
 bool CommandProcessor::HasCommand() const
 {
-  byte hasStart = 0;
+  bool hasStart = false;
   for (int i = mBufferStart; i < mBufferEnd; ++i)
   {
     if (!hasStart && mBuffer[i] == '{')
@@ -54,20 +58,39 @@ const char *CommandProcessor::GetBuffer(int &length) const
 
 CommandPacket *CommandProcessor::GetCommand()
 {
-  int commandEnd = mBufferStart;
-  for (; commandEnd < mBufferEnd; ++commandEnd)
+  int commandStart = -1;
+  int commandEnd = -1;
+  bool hasStart = false;
+  for (int i = mBufferStart; i < mBufferEnd; ++i)
   {
-    if (mBuffer[commandEnd] == '}')
+    if (!hasStart && mBuffer[i] == '{')
     {
+      commandStart = i;
+      hasStart = true;
+    }
+    else if (hasStart && mBuffer[i] == '}')
+    {
+      commandEnd = i;
       break;
-    } 
+    }
   }
   
-  CommandPacket *packet = (CommandPacket*)malloc(sizeof(CommandPacket));
-  packet->SetData((mBuffer + mBufferStart), commandEnd - mBufferStart);
-  memcpy(mBuffer, (mBuffer + mBufferStart), mBufferSize - commandEnd);
-  mBufferStart = 0;
-  mBufferEnd = mBufferEnd - commandEnd;
+  CommandPacket *packet = NULL;
+  
+  if (commandStart != -1 && commandStart != commandEnd)
+  {
+    packet = (CommandPacket*)malloc(sizeof(CommandPacket));
+    packet->SetData((mBuffer + commandStart), commandEnd - commandStart);
+    memcpy(mBuffer, (mBuffer + commandStart), mBufferSize - commandEnd);
+    mBufferStart = 0;
+    mBufferEnd -= commandEnd + 1;
+    
+    #if DEBUG_COMMAND_PROCESSING
+    Serial << "Buffer size is " << mBufferSize << "\n";
+    Serial << "Command start was " << commandStart << " Command end was " << commandEnd << ". Remaining text is " << mBufferEnd - mBufferStart << "\n";
+    Serial << "buffer start was " << mBufferStart << " buffer end was " << mBufferEnd << "\n";
+    #endif
+  }
   
   return packet; 
 }
