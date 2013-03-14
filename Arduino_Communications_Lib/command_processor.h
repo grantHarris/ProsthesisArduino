@@ -1,25 +1,21 @@
-#ifndef __COMMAND_PROCESSOR_H_
-#define __COMMAND_PROCESSOR_H_
+#ifndef __COMMAND_PROCESSOR_H__
+#define __COMMAND_PROCESSOR_H__
 
-class CommandPacket;
+class aJsonObject;
 
-class CommandProcessor
+typedef aJsonObject *(*tTypeIDRequestCallback)(aJsonObject *);
+typedef aJsonObject *(*tTelemetryToggleRequestCallback)(aJsonObject *, bool);
+typedef aJsonObject *(*tEnableToggleRequestCallback)(aJsonObject *, bool);
+
+
+namespace CommandProcessor
 {
-  public:
-    CommandProcessor(int bufferSize);
-    ~CommandProcessor();
-    
-    bool HasCommand() const;
-    bool AddChar(char data);
-    
-    const char *GetBuffer(int &length) const;
-    CommandPacket *GetCommand();
+  void ProcessMessage(aJsonObject *msg);
+  void SetTypeIDRequestCallback(tTypeIDRequestCallback req);
+  void SetTelemetryRequestCallback(tTelemetryToggleRequestCallback req);
+  void SetEnableToggleRequestCallback(tEnableToggleRequestCallback req);
+  
+  aJsonObject *CreateCommandAckMessage();
+}
 
-  private:
-    int mBufferSize;
-    int mBufferStart;
-    int mBufferEnd;
-    char* mBuffer;
-};
-
-#endif //__COMMAND_PROCESSOR_H_
+#endif //__COMMAND_PROCESSOR_H__

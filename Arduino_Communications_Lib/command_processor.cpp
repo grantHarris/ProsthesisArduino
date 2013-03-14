@@ -1,96 +1,87 @@
-#include <Arduino.h>
+#include <aJSON.h>
 #include "command_processor.h"
-#include "command_packet.h"
-
-//#define DEBUG_COMMAND_PROCESSING 1
 
 template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
 
-CommandProcessor::CommandProcessor(int bufferSize)
-:
-mBufferSize(bufferSize),
-mBufferStart(0),
-mBufferEnd(0)
-{
-  mBuffer = (char*)malloc(bufferSize * sizeof(char));
-}
+#define ID_KEY "ID"
+#define COMMAND_IDENTIFY "Id"
+#define COMMAND_TELEMETRY_TOGGLE "Te"
+#define COMMAND_DEVICE_INIT_TOGGLE "In";
+#define COMMAND_ACK "ACK"
 
-CommandProcessor::~CommandProcessor()
-{
-  free(mBuffer);
-}
+#define PARAMETER_TOGGLE "En"
 
-bool CommandProcessor::AddChar(char data)
+static tTypeIDRequestCallback mTypeIDRequestCallback = NULL;
+static tTelemetryToggleRequestCallback mTelemetryToggleCallback = NULL;
+static tEnableToggleRequestCallback mEnableCallback = NULL;
+
+namespace CommandProcessor
 {
-  if (mBufferEnd < mBufferSize - 1)
+  /* Process message like: { "pwm": { "8": 0, "9": 128 } } */
+  void ProcessMessage(aJsonObject *msg)
   {
-    mBuffer[mBufferEnd++] = data;
-    return true;
-  }
-  else
-  {
-    return false; 
-  }
-}
-
-bool CommandProcessor::HasCommand() const
-{
-  bool hasStart = false;
-  for (int i = mBufferStart; i < mBufferEnd; ++i)
-  {
-    if (!hasStart && mBuffer[i] == '{')
-    {
-      hasStart = true;
-    }
-    else if (hasStart && mBuffer[i] == '}')
-    {
-      return true; 
-    }
-  }
-  return false; 
-}
-
-const char *CommandProcessor::GetBuffer(int &length) const
-{
-  length = mBufferEnd - mBufferStart;
-  return (mBuffer + mBufferStart);
-}
-
-CommandPacket *CommandProcessor::GetCommand()
-{
-  int commandStart = -1;
-  int commandEnd = -1;
-  bool hasStart = false;
-  for (int i = mBufferStart; i < mBufferEnd; ++i)
-  {
-    if (!hasStart && mBuffer[i] == '{')
-    {
-      commandStart = i;
-      hasStart = true;
-    }
-    else if (hasStart && mBuffer[i] == '}')
-    {
-      commandEnd = i;
-      break;
-    }
+   aJsonObject *id = aJson.getObjectItem(msg, ID_KEY);
+   if (id != NULL)
+   {
+     const char *idVal = id->valuestring;
+     aJsonObject *returnMessage = NULL;
+     
+     //Check for ID interrogation
+     if (strncmp(idVal, COMMAND_IDENTIFY, strlen(COMMAND_IDENTIFY)) == 0)
+     {
+      if (mTypeIDRequestCallback != NULL)
+      {
+        returnMessage = mTypeIDRequestCallback(msg);
+      } 
+     }
+     //Check for telemetry toggle
+     else if (strncmp(idVal, COMMAND_TELEMETRY_TOGGLE, strlen(COMMAND_TELEMETRY_TOGGLE)) == 0)
+     {
+       if (mTelemetryToggleCallback != NULL)
+       {
+         aJsonObject *toggleVal = aJson.getObjectItem(msg, PARAMETER_TOGGLE);
+         returnMessage = mTelemetryToggleCallback(msg, toggleVal != NULL ? toggleVal->valuebool : false);
+       }        
+     } 
+     //Check for device initialize signal
+     else if (strncmp(idVal, COMMAND_DEVICE_INIT_TOGGLE, strlen(COMMAND_DEVICE_INIT_TOGGLE)) == 0)
+     {
+       if (mEnableCallback != NULL)
+       {
+         aJsonObject *toggleVal = aJson.getObjectItem(msg, PARAMETER_TOGGLE);
+         returnMessage = mEnableCallback(msg, toggleVal != NULL ? toggleVal->valuebool : false);
+       }        
+     } 
+     
+     //Fire the return message if one came back
+     if (returnMessage != NULL)
+     {
+       Serial << aJson.print(returnMessage) << "\n";
+       aJson.deleteItem(returnMessage); 
+     }
+   }
   }
   
-  CommandPacket *packet = NULL;
-  
-  if (commandStart != -1 && commandStart != commandEnd)
+  void SetTypeIDRequestCallback(tTypeIDRequestCallback req)
   {
-    packet = (CommandPacket*)malloc(sizeof(CommandPacket));
-    packet->SetData((mBuffer + commandStart), commandEnd - commandStart);
-    memcpy(mBuffer, (mBuffer + commandStart), mBufferSize - commandEnd);
-    mBufferStart = 0;
-    mBufferEnd -= commandEnd + 1;
-    
-    #if DEBUG_COMMAND_PROCESSING
-    Serial << "Buffer size is " << mBufferSize << "\n";
-    Serial << "Command start was " << commandStart << " Command end was " << commandEnd << ". Remaining text is " << mBufferEnd - mBufferStart << "\n";
-    Serial << "buffer start was " << mBufferStart << " buffer end was " << mBufferEnd << "\n";
-    #endif
+    mTypeIDRequestCallback = req;
   }
   
-  return packet; 
+  void SetTelemetryRequestCallback(tTelemetryToggleRequestCallback req)
+  {
+    mTelemetryToggleCallback = req;
+  }
+  
+  void SetEnableToggleRequestCallback(tEnableToggleRequestCallback req)
+  {
+    mEnableCallback = req;
+  }
+  
+  aJsonObject *CreateCommandAckMessage()
+  {
+    //Messages are initialized with the correct ID
+    aJsonObject *ackMsg = aJson.createObject();
+    aJson.addItemToObject(ackMsg, COMMAND_IDENTIFY, aJson.createItem(COMMAND_ACK));
+    return ackMsg;
+  }
 }

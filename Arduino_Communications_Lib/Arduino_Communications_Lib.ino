@@ -1,72 +1,68 @@
+#include <aJSON.h>
 #include <Arduino.h>
-#include "command_processor.h"
 
-//#define DEBUG_REMAINING_INPUT_STREAM 1
+#include "command_processor.h"
 
 template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
 
 const char* kArduinoID = "test";
 
-CommandProcessor sProcessor(256);
+aJsonStream serial_stream(&Serial);
+void processMessage(aJsonObject *msg);
+
+#define TELEMETRY_PERIOD_MS 50
+int lastTelem;
+bool telemetryEnabled = false;
 
 void setup()
 {
+  CommandProcessor::SetTypeIDRequestCallback(IDRequestCallback);
+  CommandProcessor::SetTelemetryRequestCallback(TelemetryEnableCb);
+  CommandProcessor::SetEnableToggleRequestCallback(InitializeDeviceCb);
   Serial.begin(9600);
+  
+  lastTelem = 0;
 }
 
 void loop()
 {
-  
+   if (serial_stream.available()) 
+   {
+     /* First, skip any accidental whitespace like newlines. */
+     serial_stream.skip();
+   }
+
+  if (serial_stream.available()) 
+  {
+     /* Something real on input, let's take a look. */
+     aJsonObject *msg = aJson.parse(&serial_stream);
+     CommandProcessor::ProcessMessage(msg);
+     aJson.deleteItem(msg);
+  }
+
+  if (telemetryEnabled && millis() - lastTelem > TELEMETRY_PERIOD_MS)
+  {
+    lastTelem = millis(); 
+    Serial << "Telem\n";
+  }
 }
 
-void serialEvent()
+aJsonObject * IDRequestCallback(aJsonObject *msg)
 {
-  while (Serial.available())
-  {
-     sProcessor.AddChar((char)Serial.read());
-  }
-  
-  if (sProcessor.HasCommand())
-  {
-    Serial.println("Got one!!");
-    int buffLen;
-    const char *buff = sProcessor.GetBuffer(buffLen);
-    
-    #if DEBUG_REMAINING_INPUT_STREAM
-    char msg[256];
-    strncpy(msg, buff, buffLen);
-    if (buffLen > 0)
-    {
-       msg[buffLen] = '\0';
-    }
-    else
-    {
-      msg[0] = '\0'; 
-    }
-    
-    Serial << "Buffer is " << msg << "\n";
-    #endif
-    
-    CommandPacket *test = sProcessor.GetCommand();
-    if (test != NULL)
-    {
-      free(test);
-    }
-    
-    #if DEBUG_REMAINING_INPUT_STREAM
-    buff = sProcessor.GetBuffer(buffLen);
-    strncpy(msg, buff, buffLen);
-    if (buffLen > 0)
-    {
-       msg[buffLen] = '\0';
-    }
-    else
-    {
-      msg[0] = '\0'; 
-    }
-    
-    Serial << msg << "\nBuff length was " << buffLen << "\n";
-    #endif
-  }
-  
+  aJsonObject *ackMsg = CommandProcessor::CreateCommandAckMessage();
+  aJson.addItemToObject(ackMsg, "Ad", aJson.createItem(kArduinoID));
+  return ackMsg;
 }
+
+aJsonObject * TelemetryEnableCb(aJsonObject *msg, bool enable)
+{
+  //No ACK necessary for this
+  telemetryEnabled = enable;
+  return NULL;
+}
+
+aJsonObject * InitializeDeviceCb(aJsonObject *msg, bool enable)
+{
+  return NULL;
+}
+
