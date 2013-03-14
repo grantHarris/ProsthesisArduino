@@ -5,6 +5,7 @@
 
 template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
 
+#define COMMAND_ACK_PARAMETER_ARDUINO_ID "Ad"
 const char* kArduinoID = "test";
 
 aJsonStream serial_stream(&Serial);
@@ -40,6 +41,7 @@ void loop()
      aJson.deleteItem(msg);
   }
 
+  //Soft realtime telemetry. Who cares about missed deadlines for these? The mission critical stuff goes into the interrupt CBs
   if (telemetryEnabled && millis() - lastTelem > TELEMETRY_PERIOD_MS)
   {
     lastTelem = millis(); 
@@ -50,7 +52,7 @@ void loop()
 aJsonObject * IDRequestCallback(aJsonObject *msg)
 {
   aJsonObject *ackMsg = CommandProcessor::CreateCommandAckMessage();
-  aJson.addItemToObject(ackMsg, "Ad", aJson.createItem(kArduinoID));
+  aJson.addItemToObject(ackMsg, COMMAND_ACK_PARAMETER_ARDUINO_ID, aJson.createItem(kArduinoID));
   return ackMsg;
 }
 

@@ -6,7 +6,7 @@ template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg);
 #define ID_KEY "ID"
 #define COMMAND_IDENTIFY "Id"
 #define COMMAND_TELEMETRY_TOGGLE "Te"
-#define COMMAND_DEVICE_INIT_TOGGLE "In";
+#define COMMAND_DEVICE_INIT_TOGGLE "In"
 #define COMMAND_ACK "ACK"
 
 #define PARAMETER_TOGGLE "En"
