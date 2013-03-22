@@ -9,7 +9,7 @@ class MotorController
   
   public:
   
-    MotorController(int ModePin, int MotorPin, int InputPressurePin, int LoadSensePressurePin, int TuningBoxPin, int KpPin, int KiPin, int KdPin, double Kp, double Ki, double Kd, double dt, double LoadSenseOffset, double NumericalSetpoint, double Input, double Output, double Setpoint);
+    MotorController(int ModePin, int MotorPin, int InputPressurePin, int LoadSensePressurePin, int TuningBoxPin, int KpPin, int KiPin, int KdPin, double Kp, double Ki, double Kd, double dt, double LoadSenseOffset, double NumericalSetpoint, double mInput, double mOutput, double mSetpoint);
  
     void Initialize();
     
@@ -52,6 +52,8 @@ class MotorController
     static const double Pressure_Sensitivity;
     static const double Pressure_Intercept;
     static const double Analog_to_Voltage;
+	static const double LoadSense_Test_Pressure_Max;
+	static const double SetPoint_Test_Pressure_Max;
 
 };
 #endif __MOTOR_CONTROLLER_H_

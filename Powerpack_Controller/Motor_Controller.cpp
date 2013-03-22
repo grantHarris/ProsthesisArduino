@@ -1,7 +1,7 @@
 #include "Motor_Controller.h"
 
-MotorController::MotorController(int ModePin, int MotorPin, int InputPressurePin, int LoadSensePressurePin, int TuningBoxPin, int KpPin, int KiPin, int KdPin, double Kp, double Ki, double Kd, double dt, double LoadSenseOffset, double NumericalSetpoint, double Input, double Output, double Setpoint)
-: mPIDControl(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT),
+MotorController::MotorController(int ModePin, int MotorPin, int InputPressurePin, int LoadSensePressurePin, int TuningBoxPin, int KpPin, int KiPin, int KdPin, double Kp, double Ki, double Kd, double dt, double LoadSenseOffset, double NumericalSetpoint, double mInput, double mOutput, double mSetpoint)
+: mPIDControl(&mInput, &mOutput, &mSetpoint, Kp, Ki, Kd, DIRECT),
 mModePin(ModePin),
 mMotorPin(MotorPin),
 mInputPressurePin(InputPressurePin),
@@ -15,10 +15,10 @@ mKi(Ki),
 mKd(Kd),
 mdt(dt),
 mLoadSenseOffset(LoadSenseOffset),
-mNumericalSetpoint(NumericalSetpoint),
+mNumericalSetpoint(NumericalSetpoint){}/*,
 mInput(Input),
 mSetpoint(Setpoint),
-mOutput(Output){}
+mOutput(Output){}*/
 
 const double MotorController::PID_Pot_Sensitivity = .02;
 const double MotorController::Setpoint_Pot_Sensitivity = 2.44375;
@@ -26,6 +26,8 @@ const double MotorController::Pressure_Sample_Count = 20.0;
 const double MotorController::Pressure_Sensitivity = 2500.0;
 const double MotorController::Pressure_Intercept = 1230.0;
 const double MotorController::Analog_to_Voltage = 0.004887586;
+const double MotorController::LoadSense_Test_Pressure_Max = 3000;
+const double MotorController::SetPoint_Test_Pressure_Max = 3200;
 
 void MotorController::Initialize()
 {
@@ -47,10 +49,14 @@ void MotorController::Iterate()
   if(digitalRead(mModePin) == HIGH)
   {
     mSetpoint = GetPressure(mLoadSensePressurePin) + mLoadSenseOffset;
+	if(mSetpoint > LoadSense_Test_Pressure_Max)
+		mSetpoint = LoadSense_Test_Pressure_Max;
   }
   if(digitalRead(mModePin) == LOW)
   {
     mSetpoint = mNumericalSetpoint;
+	if(mSetpoint > SetPoint_Test_Pressure_Max)
+		mSetpoint = SetPoint_Test_Pressure_Max;
   }
 
   mInput = GetPressure(mInputPressurePin);
