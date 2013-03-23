@@ -1,4 +1,4 @@
-//#define DEBUG_CBS 1
+#define DEBUG_CBS 1
 
 #include <aJSON.h>
 #include <Arduino.h>
@@ -53,7 +53,7 @@ void loop()
      /* Something real on input, let's take a look. */
      aJsonObject *msg = aJson.parse(&mJSONSerialStream);
      CommandProcessor::ProcessMessage(msg);
-     aJson.deleteItem(msg);
+     aJson.deleteItem(msg);    
   }
 
   //Soft realtime telemetry. Who cares about missed deadlines for these? The mission critical stuff goes into the interrupt CBs
@@ -125,10 +125,17 @@ aJsonObject * InitializeDeviceCb(aJsonObject *msg, bool enable)
       mDeviceState = Disabled;
     } 
   }
- 
+  
+#if DEBUG_CBS
+  Serial << "Device initialise " << enable << "\n";
+#endif
+
   //Echo initialize toggle back for the sake of example
   aJsonObject *ackMsg = CommandProcessor::CreateCommandAckMessage();
-  aJson.addItemToObject(ackMsg, CommandProcessor::PacketKeys::kToggleResult, aJson.createItem(enable));
+  if (ackMsg != NULL)
+  {
+    aJson.addItemToObject(ackMsg, CommandProcessor::PacketKeys::kToggleResult, aJson.createItem(enable));
+  }
   
   return ackMsg;
 }

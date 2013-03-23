@@ -1,4 +1,6 @@
+//#define DEBUG_PROCESSOR 1
 #include <aJSON.h>
+
 #include "command_processor.h"
 
 template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
@@ -43,15 +45,18 @@ namespace CommandProcessor
          aJsonObject *toggleVal = aJson.getObjectItem(msg, PacketKeys::kEnable);
          returnMessage = mEnableCallback(msg, toggleVal != NULL ? toggleVal->valuebool : false);
        }        
-     } 
+     }     
      
      //Fire the return message if one came back
      if (returnMessage != NULL)
      {
+#if DEBUG_PROCESSOR
+       Serial << "Sending ack\n";
+#endif
        Serial << aJson.print(returnMessage) << "\n";
        aJson.deleteItem(returnMessage); 
      }
-   }
+   }    
   }
   
   void SetTypeIDRequestCallback(tTypeIDRequestCallback req)
@@ -81,7 +86,16 @@ namespace CommandProcessor
   {
     //Messages are initialized with the correct ID
     aJsonObject *ackMsg = aJson.createObject();
-    aJson.addItemToObject(ackMsg, PacketKeys::kCommandID, aJson.createItem(CommandIDs::kAcknowledge));
+    if (ackMsg != NULL)
+    {    
+      aJson.addItemToObject(ackMsg, PacketKeys::kCommandID, aJson.createItem(CommandIDs::kAcknowledge));
+    }
+    else
+    {
+#if DEBUG_PROCESSOR
+      Serial << "Command ack allocation failed \n";
+#endif 
+    }
     return ackMsg;
   }
 }
