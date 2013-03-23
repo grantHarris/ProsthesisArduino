@@ -13,16 +13,18 @@ namespace CommandProcessor
   {
     static const char *kCommandID = "ID";
     static const char *kEnable = "EN";
-    static const char *kArduinoID = "Ad";
-    static const char *kToggleResult = "Tg";
-    static const char *kTelemetryPeriod = "Pd";
+    static const char *kArduinoID = "AID";
+    static const char *kToggleResult = "TGR";
+    static const char *kTelemetryPeriod = "PD";
+    static const char *kTelemetryState = "TS";
+    static const char *kDeviceState = "DS";
   }
  
   namespace CommandIDs
   {
     static const char *kIdentify = "Id";
     static const char *kTelemetryToggle = "Te";
-    static const char *kDeviceToggle = "In";
+    static const char *kDeviceToggle = "Dt";
     static const char *kAcknowledge = "ACK";
   }
   

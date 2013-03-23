@@ -1,4 +1,4 @@
-#define DEBUG_CBS 1
+//#define DEBUG_CBS 1
 
 #include <aJSON.h>
 #include <Arduino.h>
@@ -59,7 +59,7 @@ void loop()
   //Soft realtime telemetry. Who cares about missed deadlines for these? The mission critical stuff goes into the interrupt CBs
   if (mTelemetryEnabled && millis() - mLastTelem > mTelemetryPeriodMS)
   {
-    const char *deviceState = mDeviceState == Disabled ? "Disabled" : "Enabled";
+    const char *deviceState = mDeviceState == Active ? "Enabled" : "Disabled";
     Serial << "Telem. Diff is: " << millis() - mLastTelem << "ms. Device is " << deviceState << "\n";    
     mLastTelem = millis(); 
   }
@@ -87,6 +87,9 @@ aJsonObject * IDRequestCallback(aJsonObject *msg)
 {
   aJsonObject *ackMsg = CommandProcessor::CreateCommandAckMessage();
   aJson.addItemToObject(ackMsg, CommandProcessor::PacketKeys::kArduinoID, aJson.createItem(kArduinoID));
+  
+  aJson.addItemToObject(ackMsg, CommandProcessor::PacketKeys::kTelemetryState, aJson.createItem(mTelemetryEnabled));
+  aJson.addItemToObject(ackMsg, CommandProcessor::PacketKeys::kDeviceState, aJson.createItem(mDeviceState));
   return ackMsg;
 }
 
@@ -100,7 +103,7 @@ aJsonObject * TelemetryEnableCb(aJsonObject *msg, bool enable)
      mTelemetryPeriodMS = telemPeriod->valueint;
 #if DEBUG_CBS
      const char *enableText = mTelemetryEnabled ? "on" : "off";
-     const char *deviceState = mDeviceState == Disabled ? "Disabled" : "Enabled";
+     const char *deviceState = mDeviceState == Active ? "Enabled" : "Disabled";
      Serial << "Setting telemetry period to " << mTelemetryPeriodMS << "ms. Telemetry is " << enableText << ". Device is " << deviceState << "\n";
 #endif
   }
