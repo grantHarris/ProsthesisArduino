@@ -53,7 +53,13 @@ namespace CommandProcessor
 #if DEBUG_PROCESSOR
        Serial << "Sending ack\n";
 #endif
-       Serial << aJson.print(returnMessage) << "\n";
+       //IMPORTANT: Free the buffer after! This call creates a 256byte buffer internally and will allocate all RAM in only a few calls!
+       char *outBuff = aJson.print(returnMessage);
+       if (outBuff != NULL)
+       {
+         Serial << outBuff << "\n";
+         free(outBuff);
+       }
        aJson.deleteItem(returnMessage); 
      }
    }    
@@ -78,7 +84,13 @@ namespace CommandProcessor
   {
     if (msg != NULL)
     {
-      Serial << aJson.print(msg) << "\n"; 
+      //IMPORTANT: Free the buffer after! This call creates a 256byte buffer internally and will allocate all RAM in only a few calls!
+      char *outMsg = aJson.print(msg);
+      if (outMsg != NULL)
+      {
+        Serial << outMsg << "\n"; 
+        free(outMsg);
+      }
     }
   }
   
