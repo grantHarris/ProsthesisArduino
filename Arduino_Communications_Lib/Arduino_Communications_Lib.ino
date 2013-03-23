@@ -1,3 +1,5 @@
+#define DEBUG_CBS 1
+
 #include <aJSON.h>
 #include <Arduino.h>
 
@@ -5,18 +7,26 @@
 
 template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
 
-#define COMMAND_ACK_PARAMETER_ARDUINO_ID "Ad"
-#define COMMAND_ACK_PARAMETER_TOGGLE_SUCCESS "Tg"
-#define COMMAND_PARAMAETER_TELEMETRY_PERIOD "Pd"
+enum DeviceStates
+{
+  Uninitialized = -1,
+  Disabled = 0,
+  Active = 1,
+  Fault = 2
+};
+
+void DeviceDisabledSlice();
+void DeviceActiveSlice();
+void DeviceFaultSlice();
 
 const char* kArduinoID = "test";
 
-aJsonStream serial_stream(&Serial);
-void processMessage(aJsonObject *msg);
+aJsonStream mJSONSerialStream(&Serial);
+unsigned long mLastTelem;
+int mTelemetryPeriodMS;
+bool mTelemetryEnabled = false;
 
-int lastTelem;
-int telemetryPeriodMS;
-bool telemetryEnabled = false;
+DeviceStates mDeviceState;
 
 void setup()
 {
@@ -25,59 +35,113 @@ void setup()
   CommandProcessor::SetEnableToggleRequestCallback(InitializeDeviceCb);
   Serial.begin(9600);
   
-  telemetryPeriodMS = 50;
-  lastTelem = 0;
+  mDeviceState = Uninitialized;
+  mTelemetryPeriodMS = 50;
+  mLastTelem = 0;
 }
 
 void loop()
 {
-   if (serial_stream.available()) 
+   if (mJSONSerialStream.available()) 
    {
      /* First, skip any accidental whitespace like newlines. */
-     serial_stream.skip();
+     mJSONSerialStream.skip();
    }
 
-  if (serial_stream.available()) 
+  if (mJSONSerialStream.available()) 
   {
      /* Something real on input, let's take a look. */
-     aJsonObject *msg = aJson.parse(&serial_stream);
+     aJsonObject *msg = aJson.parse(&mJSONSerialStream);
      CommandProcessor::ProcessMessage(msg);
      aJson.deleteItem(msg);
   }
 
   //Soft realtime telemetry. Who cares about missed deadlines for these? The mission critical stuff goes into the interrupt CBs
-  if (telemetryEnabled && millis() - lastTelem > telemetryPeriodMS)
+  if (mTelemetryEnabled && millis() - mLastTelem > mTelemetryPeriodMS)
   {
-    lastTelem = millis(); 
-    Serial << "Telem\n";
+    const char *deviceState = mDeviceState == Disabled ? "Disabled" : "Enabled";
+    Serial << "Telem. Diff is: " << millis() - mLastTelem << "ms. Device is " << deviceState << "\n";    
+    mLastTelem = millis(); 
+  }
+  
+  switch (mDeviceState)
+  {
+   case Disabled:
+    DeviceDisabledSlice();
+    break;
+   
+   case Active:
+    DeviceActiveSlice();
+    break;
+   
+   case Fault:
+    DeviceFaultSlice();
+    break; 
+    
+   default:
+    break;
   }
 }
 
 aJsonObject * IDRequestCallback(aJsonObject *msg)
 {
   aJsonObject *ackMsg = CommandProcessor::CreateCommandAckMessage();
-  aJson.addItemToObject(ackMsg, COMMAND_ACK_PARAMETER_ARDUINO_ID, aJson.createItem(kArduinoID));
+  aJson.addItemToObject(ackMsg, CommandProcessor::PacketKeys::kArduinoID, aJson.createItem(kArduinoID));
   return ackMsg;
 }
 
 aJsonObject * TelemetryEnableCb(aJsonObject *msg, bool enable)
 {
   //No ACK necessary for this
-  telemetryEnabled = enable;
-  aJsonObject *telemPeriod = aJson.getObjectItem(msg, COMMAND_PARAMAETER_TELEMETRY_PERIOD);
+  mTelemetryEnabled = enable;
+  aJsonObject *telemPeriod = aJson.getObjectItem(msg, CommandProcessor::PacketKeys::kTelemetryPeriod);
   if (telemPeriod != NULL)
   {
-     telemetryPeriodMS = telemPeriod->valueint;
+     mTelemetryPeriodMS = telemPeriod->valueint;
+#if DEBUG_CBS
+     const char *enableText = mTelemetryEnabled ? "on" : "off";
+     const char *deviceState = mDeviceState == Disabled ? "Disabled" : "Enabled";
+     Serial << "Setting telemetry period to " << mTelemetryPeriodMS << "ms. Telemetry is " << enableText << ". Device is " << deviceState << "\n";
+#endif
   }
   return NULL;
 }
 
 aJsonObject * InitializeDeviceCb(aJsonObject *msg, bool enable)
 {
+  aJsonObject *enableValue = aJson.getObjectItem(msg, CommandProcessor::PacketKeys::kEnable);
+  
+  if (enableValue != NULL && mDeviceState != Fault)
+  {
+    if (enableValue->valuebool)
+    {
+      mDeviceState = Active;
+    }
+    else
+    {
+      mDeviceState = Disabled;
+    } 
+  }
+ 
   //Echo initialize toggle back for the sake of example
   aJsonObject *ackMsg = CommandProcessor::CreateCommandAckMessage();
-  aJson.addItemToObject(ackMsg, COMMAND_ACK_PARAMETER_TOGGLE_SUCCESS, aJson.createItem(enable));
+  aJson.addItemToObject(ackMsg, CommandProcessor::PacketKeys::kToggleResult, aJson.createItem(enable));
   
   return ackMsg;
+}
+
+void DeviceDisabledSlice()
+{
+  
+}
+
+void DeviceActiveSlice()
+{
+  
+}
+
+void DeviceFaultSlice()
+{
+  
 }
 

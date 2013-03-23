@@ -3,31 +3,23 @@
 
 template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
 
-#define ID_KEY "ID"
-#define COMMAND_IDENTIFY "Id"
-#define COMMAND_TELEMETRY_TOGGLE "Te"
-#define COMMAND_DEVICE_INIT_TOGGLE "In"
-#define COMMAND_ACK "ACK"
-
-#define PARAMETER_TOGGLE "En"
-
 static tTypeIDRequestCallback mTypeIDRequestCallback = NULL;
 static tTelemetryToggleRequestCallback mTelemetryToggleCallback = NULL;
 static tEnableToggleRequestCallback mEnableCallback = NULL;
 
 namespace CommandProcessor
-{
+{  
   /* Process message like: { "pwm": { "8": 0, "9": 128 } } */
   void ProcessMessage(aJsonObject *msg)
   {
-   aJsonObject *id = aJson.getObjectItem(msg, ID_KEY);
+   aJsonObject *id = aJson.getObjectItem(msg, PacketKeys::kCommandID);
    if (id != NULL)
    {
      const char *idVal = id->valuestring;
      aJsonObject *returnMessage = NULL;
      
      //Check for ID interrogation
-     if (strncmp(idVal, COMMAND_IDENTIFY, strlen(COMMAND_IDENTIFY)) == 0)
+     if (strncmp(idVal, CommandIDs::kIdentify, strlen(CommandIDs::kIdentify)) == 0)
      {
       if (mTypeIDRequestCallback != NULL)
       {
@@ -35,20 +27,20 @@ namespace CommandProcessor
       } 
      }
      //Check for telemetry toggle
-     else if (strncmp(idVal, COMMAND_TELEMETRY_TOGGLE, strlen(COMMAND_TELEMETRY_TOGGLE)) == 0)
+     else if (strncmp(idVal, CommandIDs::kTelemetryToggle, strlen(CommandIDs::kTelemetryToggle)) == 0)
      {
        if (mTelemetryToggleCallback != NULL)
        {
-         aJsonObject *toggleVal = aJson.getObjectItem(msg, PARAMETER_TOGGLE);
+         aJsonObject *toggleVal = aJson.getObjectItem(msg, PacketKeys::kEnable);
          returnMessage = mTelemetryToggleCallback(msg, toggleVal != NULL ? toggleVal->valuebool : false);
        }        
      } 
      //Check for device initialize signal
-     else if (strncmp(idVal, COMMAND_DEVICE_INIT_TOGGLE, strlen(COMMAND_DEVICE_INIT_TOGGLE)) == 0)
+     else if (strncmp(idVal, CommandIDs::kDeviceToggle, strlen(CommandIDs::kDeviceToggle)) == 0)
      {
        if (mEnableCallback != NULL)
        {
-         aJsonObject *toggleVal = aJson.getObjectItem(msg, PARAMETER_TOGGLE);
+         aJsonObject *toggleVal = aJson.getObjectItem(msg, PacketKeys::kEnable);
          returnMessage = mEnableCallback(msg, toggleVal != NULL ? toggleVal->valuebool : false);
        }        
      } 
@@ -77,11 +69,19 @@ namespace CommandProcessor
     mEnableCallback = req;
   }
   
+  void SendMessage(aJsonObject *msg)
+  {
+    if (msg != NULL)
+    {
+      Serial << aJson.print(msg) << "\n"; 
+    }
+  }
+  
   aJsonObject *CreateCommandAckMessage()
   {
     //Messages are initialized with the correct ID
     aJsonObject *ackMsg = aJson.createObject();
-    aJson.addItemToObject(ackMsg, COMMAND_IDENTIFY, aJson.createItem(COMMAND_ACK));
+    aJson.addItemToObject(ackMsg, PacketKeys::kCommandID, aJson.createItem(CommandIDs::kAcknowledge));
     return ackMsg;
   }
 }
