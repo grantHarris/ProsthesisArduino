@@ -15,6 +15,12 @@ enum DeviceStates
   Fault = 2
 };
 
+typedef struct {
+  DeviceStates deviceState;
+  double x;
+} tTelemetryData;
+
+
 void DeviceDisabledSlice();
 void DeviceActiveSlice();
 void DeviceFaultSlice();
@@ -23,10 +29,12 @@ const char* kArduinoID = "test";
 
 aJsonStream mJSONSerialStream(&Serial);
 unsigned long mLastTelem;
+unsigned long mLastMillis;
+unsigned long mActiveMillis;
 int mTelemetryPeriodMS;
 bool mTelemetryEnabled = false;
 
-DeviceStates mDeviceState;
+tTelemetryData mDeviceState;
 
 void setup()
 {
@@ -35,7 +43,8 @@ void setup()
   CommandProcessor::SetEnableToggleRequestCallback(InitializeDeviceCb);
   Serial.begin(9600);
   
-  mDeviceState = Uninitialized;
+  mDeviceState.deviceState = Uninitialized;
+  mDeviceState.x = 0;
   mTelemetryPeriodMS = 50;
   mLastTelem = 0;
 }
@@ -59,12 +68,22 @@ void loop()
   //Soft realtime telemetry. Who cares about missed deadlines for these? The mission critical stuff goes into the interrupt CBs
   if (mTelemetryEnabled && millis() - mLastTelem > mTelemetryPeriodMS)
   {
-    const char *deviceState = mDeviceState == Active ? "Enabled" : "Disabled";
-    Serial << "Telem. Diff is: " << millis() - mLastTelem << "ms. Device is " << deviceState << "\n";    
+    const char *deviceState = mDeviceState.deviceState == Active ? "Enabled" : "Disabled";
+    //Serial << "Telem. Diff is: " << millis() - mLastTelem << "ms. Device is " << deviceState << "\n";    
+    
+    aJsonObject *msg = aJson.createObject();
+    if (msg != NULL)
+    {
+      aJson.addItemToObject(msg, CommandProcessor::PacketKeys::kCommandID , aJson.createItem(CommandProcessor::PacketKeys::kTelemetryID));
+      aJson.addItemToObject(msg, "x", aJson.createItem(mDeviceState.x));
+      aJson.addItemToObject(msg, CommandProcessor::PacketKeys::kDeviceState , aJson.createItem(mDeviceState.deviceState));
+      CommandProcessor::SendMessage(msg);
+      aJson.deleteItem(msg);
+    }
     mLastTelem = millis(); 
   }
   
-  switch (mDeviceState)
+  switch (mDeviceState.deviceState)
   {
    case Disabled:
     DeviceDisabledSlice();
@@ -89,7 +108,7 @@ aJsonObject * IDRequestCallback(aJsonObject *msg)
   aJson.addItemToObject(ackMsg, CommandProcessor::PacketKeys::kArduinoID, aJson.createItem(kArduinoID));
   
   aJson.addItemToObject(ackMsg, CommandProcessor::PacketKeys::kTelemetryState, aJson.createItem(mTelemetryEnabled));
-  aJson.addItemToObject(ackMsg, CommandProcessor::PacketKeys::kDeviceState, aJson.createItem(mDeviceState));
+  aJson.addItemToObject(ackMsg, CommandProcessor::PacketKeys::kDeviceState, aJson.createItem(mDeviceState.deviceState));
   return ackMsg;
 }
 
@@ -103,7 +122,7 @@ aJsonObject * TelemetryEnableCb(aJsonObject *msg, bool enable)
      mTelemetryPeriodMS = telemPeriod->valueint;
 #if DEBUG_CBS
      const char *enableText = mTelemetryEnabled ? "on" : "off";
-     const char *deviceState = mDeviceState == Active ? "Enabled" : "Disabled";
+     const char *deviceState = mDeviceState.deviceState == Active ? "Enabled" : "Disabled";
      Serial << "Setting telemetry period to " << mTelemetryPeriodMS << "ms. Telemetry is " << enableText << ". Device is " << deviceState << "\n";
 #endif
   }
@@ -114,15 +133,15 @@ aJsonObject * InitializeDeviceCb(aJsonObject *msg, bool enable)
 {
   aJsonObject *enableValue = aJson.getObjectItem(msg, CommandProcessor::PacketKeys::kEnable);
   
-  if (enableValue != NULL && mDeviceState != Fault)
+  if (enableValue != NULL && mDeviceState.deviceState != Fault)
   {
     if (enableValue->valuebool)
     {
-      mDeviceState = Active;
+      mDeviceState.deviceState = Active;
     }
     else
     {
-      mDeviceState = Disabled;
+      mDeviceState.deviceState = Disabled;
     } 
   }
   
@@ -142,16 +161,21 @@ aJsonObject * InitializeDeviceCb(aJsonObject *msg, bool enable)
 
 void DeviceDisabledSlice()
 {
-  
+  mLastMillis = millis();
 }
 
 void DeviceActiveSlice()
 {
+  unsigned long currMillis = millis();
+  mActiveMillis += currMillis - mLastMillis;
   
+  mDeviceState.x = sin((float)mActiveMillis / 1000.0f);
+  
+  mLastMillis = currMillis;
 }
 
 void DeviceFaultSlice()
 {
-  
+  mLastMillis = millis();  
 }
 

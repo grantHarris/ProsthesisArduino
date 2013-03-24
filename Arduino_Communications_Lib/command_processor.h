@@ -18,6 +18,7 @@ namespace CommandProcessor
     static const char *kTelemetryPeriod = "PD";
     static const char *kTelemetryState = "TS";
     static const char *kDeviceState = "DS";
+    static const char *kTelemetryID = "TM";
   }
  
   namespace CommandIDs
