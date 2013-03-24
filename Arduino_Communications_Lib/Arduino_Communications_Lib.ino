@@ -2,8 +2,7 @@
 
 #include <aJSON.h>
 #include <Arduino.h>
-
-#include "command_processor.h"
+#include <command_processor.h>
 
 template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
 
@@ -74,7 +73,7 @@ void loop()
     aJsonObject *msg = aJson.createObject();
     if (msg != NULL)
     {
-      aJson.addItemToObject(msg, CommandProcessor::PacketKeys::kCommandID , aJson.createItem(CommandProcessor::PacketKeys::kTelemetryID));
+      aJson.addItemToObject(msg, CommandProcessor::PacketKeys::kCommandID , aJson.createItem(CommandProcessor::CommandIDs::kTelemetryID));
       aJson.addItemToObject(msg, "x", aJson.createItem(mDeviceState.x));
       aJson.addItemToObject(msg, CommandProcessor::PacketKeys::kDeviceState , aJson.createItem(mDeviceState.deviceState));
       CommandProcessor::SendMessage(msg);
