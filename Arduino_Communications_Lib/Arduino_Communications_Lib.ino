@@ -3,14 +3,10 @@
 #include <aJSON.h>
 #include <command_processor.h>
 #include "DeviceState.h"
+#include "motor_state.h"
 
 //Handy wrapper for using stream-like serial printing
 template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
-
-typedef struct {
-  DeviceStates deviceState;
-  double x;
-} tTelemetryData;
 
 void TransitionToState(DeviceStates toState);
 void DeviceDisabledSlice();
@@ -26,7 +22,7 @@ unsigned long mActiveMillis;
 int mTelemetryPeriodMS;
 bool mTelemetryEnabled = false;
 
-tTelemetryData mDeviceState;
+MotorState::tMotorControllerState mDeviceState;
 
 void setup()
 {
@@ -35,8 +31,18 @@ void setup()
   CommandProcessor::SetEnableToggleRequestCallback(InitializeDeviceCb);
   Serial.begin(9600);
   
-  mDeviceState.deviceState = Uninitialized;
-  mDeviceState.x = 0;
+  //Initialize our device state
+  mDeviceState.State = Uninitialized;
+  for (int i = 0; i < NUM_MOTOR_CONTROLLERS; ++i)
+  {
+     mDeviceState.Currents[i] = 0.0f;
+     mDeviceState.Millivolts[i] = 0;     
+     mDeviceState.OutputPressure[i] = 0.0f;
+     mDeviceState.LoadPressure[i] = 0.0f;
+     mDeviceState.MotorDutyCycle[i] = 0.0f;     
+  }
+  mDeviceState.IsLoadSense = false;
+  
   mTelemetryPeriodMS = 50;
   mLastTelem = 0;
 }
@@ -60,22 +66,21 @@ void loop()
   //Soft realtime telemetry. Who cares about missed deadlines for these? The mission critical stuff goes into the interrupt CBs
   if (mTelemetryEnabled && millis() - mLastTelem > mTelemetryPeriodMS)
   {
-    const char *deviceState = mDeviceState.deviceState == Active ? "Enabled" : "Disabled";
-    //Serial << "Telem. Diff is: " << millis() - mLastTelem << "ms. Device is " << deviceState << "\n";    
+    const char *deviceState = mDeviceState.State == Active ? "Enabled" : "Disabled";
+#if DEBUG_CBS    
+    Serial << "Telem. Diff is: " << millis() - mLastTelem << "ms. Device is " << deviceState << "\n";    
+#endif    
     
-    aJsonObject *msg = aJson.createObject();
+    aJsonObject *msg = MotorState::MotorStateToJSON(mDeviceState);
     if (msg != NULL)
     {
-      aJson.addItemToObject(msg, CommandProcessor::PacketKeys::kCommandID , aJson.createItem(CommandProcessor::CommandIDs::kTelemetryID));
-      aJson.addItemToObject(msg, "x", aJson.createItem(mDeviceState.x));
-      aJson.addItemToObject(msg, CommandProcessor::PacketKeys::kDeviceState , aJson.createItem(mDeviceState.deviceState));
       CommandProcessor::SendMessage(msg);
       aJson.deleteItem(msg);
     }
     mLastTelem = millis(); 
   }
   
-  switch (mDeviceState.deviceState)
+  switch (mDeviceState.State)
   {
    case Disabled:
     DeviceDisabledSlice();
@@ -100,7 +105,7 @@ aJsonObject * IDRequestCallback(aJsonObject *msg)
   aJson.addItemToObject(ackMsg, CommandProcessor::PacketKeys::kArduinoID, aJson.createItem(kArduinoID));
   
   aJson.addItemToObject(ackMsg, CommandProcessor::PacketKeys::kTelemetryState, aJson.createItem(mTelemetryEnabled));
-  aJson.addItemToObject(ackMsg, CommandProcessor::PacketKeys::kDeviceState, aJson.createItem(mDeviceState.deviceState));
+  aJson.addItemToObject(ackMsg, CommandProcessor::PacketKeys::kDeviceState, aJson.createItem(mDeviceState.State));
   return ackMsg;
 }
 
@@ -114,7 +119,7 @@ aJsonObject * TelemetryEnableCb(aJsonObject *msg, bool enable)
      mTelemetryPeriodMS = telemPeriod->valueint;
 #if DEBUG_CBS
      const char *enableText = mTelemetryEnabled ? "on" : "off";
-     const char *deviceState = mDeviceState.deviceState == Active ? "Enabled" : "Disabled";
+     const char *deviceState = mDeviceState.State == Active ? "Enabled" : "Disabled";
      Serial << "Setting telemetry period to " << mTelemetryPeriodMS << "ms. Telemetry is " << enableText << ". Device is " << deviceState << "\n";
 #endif
   }
@@ -125,7 +130,7 @@ aJsonObject * InitializeDeviceCb(aJsonObject *msg, bool enable)
 {
   aJsonObject *enableValue = aJson.getObjectItem(msg, CommandProcessor::PacketKeys::kEnable);
   
-  if (enableValue != NULL && mDeviceState.deviceState != Fault)
+  if (enableValue != NULL && mDeviceState.State != Fault)
   {
     if (enableValue->valuebool)
     {
@@ -147,7 +152,7 @@ aJsonObject * InitializeDeviceCb(aJsonObject *msg, bool enable)
 void TransitionToState(DeviceStates toState)
 {
   //TODO: Perform state transitions here
-  DeviceStates fromState = mDeviceState.deviceState;
+  DeviceStates fromState = mDeviceState.State;
   aJsonObject *msg = NULL;
   bool successful = false;
   switch (fromState)
@@ -182,9 +187,9 @@ void TransitionToState(DeviceStates toState)
   {
     msg = aJson.createObject();
     aJson.addItemToObject(msg, CommandProcessor::PacketKeys::kCommandID, aJson.createItem(CommandProcessor::CommandIDs::kStateChange));
-    aJson.addItemToObject(msg, CommandProcessor::PacketKeys::kChangeFrom , aJson.createItem(mDeviceState.deviceState));
+    aJson.addItemToObject(msg, CommandProcessor::PacketKeys::kChangeFrom , aJson.createItem(mDeviceState.State));
     aJson.addItemToObject(msg, CommandProcessor::PacketKeys::kChangeTo , aJson.createItem(toState));
-    mDeviceState.deviceState = toState;    
+    mDeviceState.State = toState;    
   }
   
   if (msg != NULL)
@@ -203,9 +208,6 @@ void DeviceActiveSlice()
 {
   unsigned long currMillis = millis();
   mActiveMillis += currMillis - mLastMillis;
-  
-  mDeviceState.x = sin((float)mActiveMillis / 1000.0f);
-  
   mLastMillis = currMillis;
 }
 
