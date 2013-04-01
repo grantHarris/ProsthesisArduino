@@ -18,6 +18,8 @@ namespace CommandProcessor
     static const char *kTelemetryPeriod = "PD";
     static const char *kTelemetryState = "TS";
     static const char *kDeviceState = "DS";
+    static const char *kChangeFrom = "FR";
+    static const char *kChangeTo = "TO";	
   }
  
   namespace CommandIDs
@@ -26,7 +28,8 @@ namespace CommandProcessor
     static const char *kTelemetryToggle = "Te";
     static const char *kDeviceToggle = "Dt";
     static const char *kAcknowledge = "ACK";
-    static const char *kTelemetryID = "TM";
+    static const char *kTelemetryID = "Tm";
+    static const char *kStateChange = "Sc";
   }
   
   void ProcessMessage(aJsonObject *msg);

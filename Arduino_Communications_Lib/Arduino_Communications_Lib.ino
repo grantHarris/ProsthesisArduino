@@ -1,30 +1,23 @@
 //#define DEBUG_CBS 1
-
-#include <aJSON.h>
 #include <Arduino.h>
+#include <aJSON.h>
 #include <command_processor.h>
+#include "DeviceState.h"
 
+//Handy wrapper for using stream-like serial printing
 template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
-
-enum DeviceStates
-{
-  Uninitialized = -1,
-  Disabled = 0,
-  Active = 1,
-  Fault = 2
-};
 
 typedef struct {
   DeviceStates deviceState;
   double x;
 } tTelemetryData;
 
-
+void TransitionToState(DeviceStates toState);
 void DeviceDisabledSlice();
 void DeviceActiveSlice();
 void DeviceFaultSlice();
 
-const char* kArduinoID = "test";
+const char* kArduinoID = "mcon";
 
 aJsonStream mJSONSerialStream(&Serial);
 unsigned long mLastTelem;
@@ -136,11 +129,11 @@ aJsonObject * InitializeDeviceCb(aJsonObject *msg, bool enable)
   {
     if (enableValue->valuebool)
     {
-      mDeviceState.deviceState = Active;
+      TransitionToState(Active);
     }
     else
     {
-      mDeviceState.deviceState = Disabled;
+      TransitionToState(Disabled);
     } 
   }
   
@@ -148,14 +141,57 @@ aJsonObject * InitializeDeviceCb(aJsonObject *msg, bool enable)
   Serial << "Device initialise " << enable << "\n";
 #endif
 
-  //Echo initialize toggle back for the sake of example
-  aJsonObject *ackMsg = CommandProcessor::CreateCommandAckMessage();
-  if (ackMsg != NULL)
+  return NULL;
+}
+
+void TransitionToState(DeviceStates toState)
+{
+  //TODO: Perform state transitions here
+  DeviceStates fromState = mDeviceState.deviceState;
+  aJsonObject *msg = NULL;
+  bool successful = false;
+  switch (fromState)
   {
-    aJson.addItemToObject(ackMsg, CommandProcessor::PacketKeys::kToggleResult, aJson.createItem(enable));
+  case Uninitialized:
+    if (toState != Uninitialized)
+    {
+      successful = true; 
+    }
+    break;
+    
+  case Disabled:
+    if (toState != Uninitialized)
+    {
+      successful = true; 
+    }
+    break;
+  
+  case Active:
+    if (toState != Uninitialized)
+    {
+      successful = true; 
+    }  
+    break;
+    
+  //No recovery from faults
+  case Fault:
+    break;
+  } 
+  
+  if (successful)
+  {
+    msg = aJson.createObject();
+    aJson.addItemToObject(msg, CommandProcessor::PacketKeys::kCommandID, aJson.createItem(CommandProcessor::CommandIDs::kStateChange));
+    aJson.addItemToObject(msg, CommandProcessor::PacketKeys::kChangeFrom , aJson.createItem(mDeviceState.deviceState));
+    aJson.addItemToObject(msg, CommandProcessor::PacketKeys::kChangeTo , aJson.createItem(toState));
+    mDeviceState.deviceState = toState;    
   }
   
-  return ackMsg;
+  if (msg != NULL)
+  {
+    CommandProcessor::SendMessage(msg);
+    aJson.deleteItem(msg);
+  }
 }
 
 void DeviceDisabledSlice()
