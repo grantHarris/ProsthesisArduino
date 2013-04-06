@@ -17,6 +17,7 @@ namespace MotorState
     float FlowRate[NUM_MOTOR_CONTROLLERS];
     bool IsLoadSense;
     float MotorDutyCycle[NUM_MOTOR_CONTROLLERS];
+    float PressureSetPoint;
     DeviceStates State;
   } tMotorControllerState;
   

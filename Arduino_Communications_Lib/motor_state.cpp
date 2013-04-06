@@ -16,6 +16,7 @@ namespace MotorState
     static const char *kUsingLoadSenseKey = "Load";
     static const char *kMotorDutyCycleArray = "Dt";
     static const char *kDeviceStateKey = "Ds";
+    static const char *kPressureSetPoint = "Ps";
   }  
 }
 
@@ -43,6 +44,7 @@ aJsonObject *MotorState::MotorStateToJSON(tMotorControllerState state)
   
   aJson.addItemToObject(msg, MotorState::MotorStateKeys::kUsingLoadSenseKey, aJson.createItem(state.IsLoadSense));
   aJson.addItemToObject(msg, MotorState::MotorStateKeys::kDeviceStateKey, aJson.createItem(state.State));  
+  aJson.addItemToObject(msg, MotorState::MotorStateKeys::kPressureSetPoint, aJson.createItem(state.PressureSetPoint));  
   
   aJson.addItemToObject(msg, MotorState::MotorStateKeys::kCurrentArray, motorCurrents);
   aJson.addItemToObject(msg, MotorState::MotorStateKeys::kMotorVoltageArray, motorVoltages);
