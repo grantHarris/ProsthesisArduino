@@ -217,7 +217,7 @@ void DeviceDisabledSlice()
   mLastMillis = millis();
 }
 
-#define RAD_2_DEG(x) (x * 180 / 3.141)
+#define RAD_2_DEG(x) ((double)x * 180 / 3.141)
 
 void DeviceActiveSlice()
 {
@@ -227,7 +227,10 @@ void DeviceActiveSlice()
   for (int i = 0; i < NUM_MOTOR_CONTROLLERS; ++i)
   {
     mDeviceState.Currents[i] = constrain(cos(RAD_2_DEG(mActiveMillis) / 1000), 0, 1);
-    mDeviceState.Millivolts[i] = constrain(cos(RAD_2_DEG(mActiveMillis + 45) / 1000), 0, 1);
+    mDeviceState.Millivolts[i] = constrain(cos(RAD_2_DEG(mActiveMillis + 45) / 1000), 0, 1) * 1000;
+    
+    mDeviceState.OutputPressure[i] = constrain(sin(RAD_2_DEG(mActiveMillis) / 1000), 0, 1);
+    mDeviceState.FlowRate[i] = constrain(sin(RAD_2_DEG(mActiveMillis + 45) / 1000), 0, 1);    
   }
   
   mLastMillis = currMillis;
