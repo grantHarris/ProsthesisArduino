@@ -14,6 +14,7 @@ void DeviceActiveSlice();
 void DeviceFaultSlice();
 
 const char* kArduinoID = "mcon";
+const int kActiveLEDPin = 13;
 
 aJsonStream mJSONSerialStream(&Serial);
 unsigned long mLastTelem;
@@ -42,6 +43,9 @@ void setup()
      mDeviceState.MotorDutyCycle[i] = 0.0f;     
   }
   mDeviceState.IsLoadSense = false;
+  
+  pinMode(kActiveLEDPin, OUTPUT);
+  digitalWrite(kActiveLEDPin, LOW);
   
   mTelemetryPeriodMS = 50;
   mLastTelem = 0;
@@ -168,7 +172,7 @@ void TransitionToState(DeviceStates toState)
     if (toState != Uninitialized)
     {
       successful = true; 
-    }
+    }    
     break;
   
   case Active:
@@ -182,6 +186,15 @@ void TransitionToState(DeviceStates toState)
   case Fault:
     break;
   } 
+  
+  if (successful && toState == Active)
+  {
+    digitalWrite(kActiveLEDPin, HIGH);    
+  }
+  else
+  {
+    digitalWrite(kActiveLEDPin, LOW);  
+  }
   
   if (successful)
   {
@@ -204,10 +217,19 @@ void DeviceDisabledSlice()
   mLastMillis = millis();
 }
 
+#define RAD_2_DEG(x) (x * 180 / 3.141)
+
 void DeviceActiveSlice()
 {
   unsigned long currMillis = millis();
   mActiveMillis += currMillis - mLastMillis;
+  
+  for (int i = 0; i < NUM_MOTOR_CONTROLLERS; ++i)
+  {
+    mDeviceState.Currents[i] = constrain(cos(RAD_2_DEG(mActiveMillis) / 1000), 0, 1);
+    mDeviceState.Millivolts[i] = constrain(cos(RAD_2_DEG(mActiveMillis + 45) / 1000), 0, 1);
+  }
+  
   mLastMillis = currMillis;
 }
 
