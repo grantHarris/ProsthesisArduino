@@ -9,7 +9,7 @@
 #define SETPOINT_PLUS_PIN 25
 #define SETPOINT_MINUS_PIN 24
 
-
+#define SYSTEM_PRINT_TIME 1000 //ms
 #define SAMPLE_TIME 10 //ms
 
 #define PID_POT_SENSITIVITY 0.02
@@ -24,7 +24,10 @@ double pidP = 2;
 double pidI = 5;
 double pidD = 1;
 
-boolean changeSetpoint = false;
+boolean changeSetpoint = false;//if switch is pressed
+
+unsigned long printTimer = 0;
+boolean serialPrintFlag = false;
 
 PID PID_Controller(&pidInput, &pidOutput, &pidSetpoint, pidP, pidI, pidD, DIRECT);
 
@@ -37,28 +40,51 @@ void setup()
   PID_Controller.SetMode(AUTOMATIC);
   PID_Controller.SetSampleTime(SAMPLE_TIME);
   
-  MsTimer2::set(1000,Print_Info);
+  MsTimer2::set(1,TimedCommands);
   MsTimer2::start();
-  
-}
+}//end setup()
 
-void Print_Info()
+void TimedCommands()
 {
-  Serial.print("P:");Serial.println(pidP);
-  Serial.print("I:");Serial.println(pidI);
-  Serial.print("D:");Serial.println(pidD);
-  Serial.print("In:");Serial.println(pidInput);
-  Serial.print("Set:");Serial.println(pidSetpoint);
-  Serial.print("Out:");Serial.println(pidOutput);
-}
+  Calculate();
+  if( (millis()-printTimer) > SYSTEM_PRINT_TIME)
+  {
+    printTimer = millis();
+    serialPrintFlag = true;
+  }
+}//end TimedCommands()
 
 void loop()
 {
+  Iterate();
+  if (serialPrintFlag == true)
+  {
+    Print_Info();
+    serialPrintFlag = false;
+    
+  }
+}//end loop()
+
+double GetPressure(int Pin)
+{
+  return (double) (analogRead(Pin)*ANALOG_TO_VOLTAGE*PRESSURE_SENSITIVITY)-PRESSURE_INTERCEPT;
+}//end GetPressure(int)
+
+void Calculate()
+{
+  PID_Controller.Compute();
+  analogWrite(PWM_PIN,pidOutput);
+}//end Calculate()
+
+void Iterate()
+{  
   pidInput = GetPressure(INPUT_PRESSURE_PIN);
   pidP = analogRead(P_PIN)*PID_POT_SENSITIVITY;
   pidI = analogRead(I_PIN)*PID_POT_SENSITIVITY;
   pidD = analogRead(D_PIN)*PID_POT_SENSITIVITY;
   PID_Controller.SetTunings(pidP,pidI,pidD);
+  
+  //for setpoint switches
   if( changeSetpoint == false && digitalRead(SETPOINT_PLUS_PIN) == HIGH )
   {
     pidSetpoint += 50;
@@ -73,17 +99,16 @@ void loop()
   {
     changeSetpoint = false;
   }
-  
-  PID_Controller.Compute();
-  analogWrite(PWM_PIN,pidOutput);
-  
-}
+}//end Iterate()
 
-double GetPressure(int Pin)
+void Print_Info()
 {
+  Serial.print("P:");Serial.println(pidP);
+  Serial.print("I:");Serial.println(pidI);
+  Serial.print("D:");Serial.println(pidD);
+  Serial.print("In:");Serial.println(pidInput);
+  Serial.print("Set:");Serial.println(pidSetpoint);
+  Serial.print("Out:");Serial.println(pidOutput);
+}//end Print_Info()
+
   
- 
-  return (double) (analogRead(Pin)*ANALOG_TO_VOLTAGE*PRESSURE_SENSITIVITY)-PRESSURE_INTERCEPT;
-}
-
-
