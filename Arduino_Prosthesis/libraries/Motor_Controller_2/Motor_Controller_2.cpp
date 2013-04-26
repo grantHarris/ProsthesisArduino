@@ -31,8 +31,8 @@ void MotorController::Iterate()
 {
   mcInput = GetPressure(mcInputPin);
   mcP = analogRead(mcPPin)*PID_POT_SENSITIVITY;
-  mcI = analogRead(mcIPin)*PID_POT_SENSITIVITY;
-  mcD = analogRead(mcDPin)*PID_POT_SENSITIVITY;
+  mcI = 0;//analogRead(mcIPin)*PID_POT_SENSITIVITY;
+  mcD = 0;//analogRead(mcDPin)*PID_POT_SENSITIVITY;
   PID_Controller.SetTunings(mcP,mcI,mcD);
 }//end Iterate()
 
@@ -44,7 +44,12 @@ bool MotorController::Calculate()
 
 double MotorController::GetPressure(int pin)
 {
-  return (double) (analogRead(pin)*ANALOG_TO_VOLTAGE*PRESSURE_SENSITIVITY)-PRESSURE_INTERCEPT;
+  double total = 0;
+  for(int i=0;i<INPUT_AVG_COUNT; i++)
+  {
+    total += analogRead(pin)*(ANALOG_TO_VOLTAGE*PRESSURE_SENSITIVITY)-PRESSURE_INTERCEPT;
+  }
+  return (double) (total/INPUT_AVG_COUNT);
 }//end GetPressure(int)
 
 void MotorController::SetSetpoint(double newSet)

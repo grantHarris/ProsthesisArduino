@@ -1,3 +1,4 @@
+#include <Wire.h>
 #include <MsTimer2.h>
 #include <PID_v1.h>
 #include <Motor_Controller_2.h>
@@ -9,19 +10,28 @@
 #define PWM_PIN 13
 #define SETPOINT_PLUS_PIN 25
 #define SETPOINT_MINUS_PIN 24
+#define LOADSENSE_PLUS_PIN 23
+#define LOADSENSE_MINUS_PIN 22
+
+#define DISPLAY_ADDRESS1 0x70 //This is the default address of the OpenSegment with both solder jumpers open
+#define DISPLAY_ADDRESS2 0x72
 
 #define SYSTEM_PRINT_TIME 1000 //ms
-#define SAMPLE_TIME 10 //ms
+#define INTERRUPT_TIME 1 //ms
+#define SAMPLE_TIME 1 //ms
 
+#define INITIAL_SETPOINT 1500
+#define INITIAL_LOADSENSE 500
 
 double pidInput = 0;
 double pidSetpoint = 0;
 double pidOutput = 0;
-double pidP = 2;
-double pidI = 5;
-double pidD = 1;
+double pidP = 0;
+double pidI = 0;
+double pidD = 0;
 
-boolean changeSetpointFlag = false;//if switch is pressed
+boolean changeSetpointFlag = false; //if switch is pressed
+boolean changeLoadSenseFlag = false;//if switch is pressed 
 
 unsigned long printTimer = 0;
 boolean serialPrintFlag = false;
@@ -31,10 +41,17 @@ MotorController MController(pidInput, pidOutput, pidSetpoint, pidP, pidI, pidD, 
 void setup()
 {
   Serial.begin(9600);
+  Wire.begin();
+  Wire.beginTransmission(DISPLAY_ADDRESS1);
+  Wire.write('v');
+  Wire.endTransmission();
+  Wire.beginTransmission(DISPLAY_ADDRESS2);
+  Wire.write('v');
+  Wire.endTransmission();
   
-  MController.SetSetpoint(2500);
+  MController.SetSetpoint(INITIAL_SETPOINT);
   MController.Initialize(SAMPLE_TIME);
-  MsTimer2::set(1,TimedCommands);
+  MsTimer2::set(INTERRUPT_TIME,TimedCommands);
   MsTimer2::start();
 }//end setup()
 
@@ -54,13 +71,13 @@ void loop()
   Interface();
   if (serialPrintFlag == true)
   {
-    Print_Info();
+    //Print_Info_Seg();
+    //Print_Info_Ser();
     serialPrintFlag = false;
-    
   }
 }//end loop()
 
-void Print_Info()
+void Print_Info_Ser()
 {
   Serial.print("P:");Serial.println(MController.GetP());
   Serial.print("I:");Serial.println(MController.GetI());
@@ -69,6 +86,29 @@ void Print_Info()
   Serial.print("Set:");Serial.println(MController.GetSetpoint());
   Serial.print("Out:");Serial.println(MController.GetOutput());
 }//end Print_Info()
+
+void Print_Info_Seg()
+{
+  WriteValue(DISPLAY_ADDRESS1, MController.GetInput());
+  WriteValue(DISPLAY_ADDRESS2, MController.GetSetpoint());
+}
+
+void WriteValue(int address, double value)
+{
+  int truncatedValue = (int)value;
+  
+  Wire.beginTransmission(address);
+  Wire.write(0x79);
+  Wire.write(0x00);
+  Wire.write(truncatedValue/1000);
+  truncatedValue %= 1000;
+  Wire.write(truncatedValue/100);
+  truncatedValue %= 100;
+  Wire.write(truncatedValue/10);
+  truncatedValue %= 10;
+  Wire.write(truncatedValue);
+  Wire.endTransmission();
+}
 
 void Interface()
 {
@@ -87,6 +127,22 @@ void Interface()
   {
     changeSetpointFlag = false;
   }
+  /*
+  if( changeLoadSenseFlag == false && digitalRead(LOADSENSE_PLUS_PIN) == HIGH )
+  {
+    MController.AddToSetpoint(50);//pidSetpoint += 50;
+    changeLoadSenseFlag = true;
+  }
+  else if( changeLoadSenseFlag == false && digitalRead(LOADSENSE_MINUS_PIN) == HIGH )
+  {
+    MController.AddToSetpoint(-50);//pidSetpoint -= 50;
+    changeLoadSenseFlag = true;
+  }
+  else if(digitalRead(LOADSENSE_PLUS_PIN) == LOW && digitalRead(LOADSENSE_MINUS_PIN) == LOW)
+  {
+    changeLoadSenseFlag = false;
+  }
+  */
 }//end Interface()
 
 /*

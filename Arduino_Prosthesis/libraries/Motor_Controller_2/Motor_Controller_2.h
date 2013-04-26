@@ -13,6 +13,7 @@ class MotorController
     #define ANALOG_TO_VOLTAGE 0.004887586
     #define PRESSURE_SENSITIVITY 2500
     #define PRESSURE_INTERCEPT 1230
+	#define INPUT_AVG_COUNT 5
 	
     MotorController(double tInput, double tOutput, double tSetpoint,
                                  double tP, double tI, double tD, int tDirection,
