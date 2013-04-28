@@ -1,0 +1,25 @@
+#######################################
+# Syntax Coloring Map For PID Library
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+ProsthesisPotBox	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+SetConnectionDirtyCallback KEYWORD2
+AttemptReconnect KEYWORD2
+SetOutputLimits	KEYWORD2
+GetPID KEYWORD2
+IsConnected KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+tConectionDirtyCB LITERAL1
