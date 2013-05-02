@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <PID_v1.h>
+#include <pot_box.h>
 
 class MotorController
 {
@@ -18,9 +19,12 @@ class MotorController
     MotorController(double tInput, double tOutput, double tSetpoint,
                                  double tP, double tI, double tD, int tDirection,
 		                         int tPPin, int tIPin, int tDPin,
-		                         int tInputPin, int tOutputPin);
+		                         int tInputPin, int tOutputPin,
+								 int tBoxInterruptPin, int tBoxConnectionPin);
 								 
     void Initialize(int);
+	
+	void MarkConnectionDirty();
 	
 	void Iterate();
   
@@ -38,11 +42,13 @@ class MotorController
 	double GetInput();
 	double GetSetpoint();
 	double GetOutput();
-	
+	int GetBoxIsConnected();
+	bool GetBoxConnectionDirty();
 
   private:
     
 	PID PID_Controller;
+	ProsthesisPotBox PID_PotBox;
 	
     double mcInput;
 	double mcOutput;
@@ -55,5 +61,11 @@ class MotorController
 	int mcDPin;
 	int mcInputPin;
 	int mcOutputPin;
+	int mcBoxInterruptID;
+	int mcBoxConnectionPin;
+	int mcBoxIsConnected;
+	bool mcBoxConnectionDirty;
+	static void WrapperForMarkConnectionDirty();
+	static MotorController* sMotorCont;
 };
 #endif __MOTOR_CONTROLLER_2_H_

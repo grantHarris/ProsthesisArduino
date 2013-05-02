@@ -1,3 +1,4 @@
+#include <pot_box.h>
 #include <Wire.h>
 #include <MsTimer2.h>
 #include <PID_v1.h>
@@ -8,6 +9,9 @@
 #define I_PIN 6
 #define D_PIN 7
 #define PWM_PIN 13
+#define POT_BOX_INTERRUPT_ID 0
+#define POT_BOX_INTERRUPT_PIN 2
+
 #define SETPOINT_PLUS_PIN 25
 #define SETPOINT_MINUS_PIN 24
 #define LOADSENSE_PLUS_PIN 23
@@ -36,7 +40,7 @@ boolean changeLoadSenseFlag = false;//if switch is pressed
 unsigned long printTimer = 0;
 boolean serialPrintFlag = false;
 
-MotorController MController(pidInput, pidOutput, pidSetpoint, pidP, pidI, pidD, DIRECT, P_PIN, I_PIN, D_PIN, INPUT_PRESSURE_PIN, PWM_PIN);
+MotorController MController(pidInput, pidOutput, pidSetpoint, pidP, pidI, pidD, DIRECT, P_PIN, I_PIN, D_PIN, INPUT_PRESSURE_PIN, PWM_PIN, POT_BOX_INTERRUPT_ID, POT_BOX_INTERRUPT_PIN);
 
 void setup()
 {
@@ -145,36 +149,4 @@ void Interface()
   */
 }//end Interface()
 
-/*
-double GetPressure(int Pin)
-{
-  return (double) (analogRead(Pin)*ANALOG_TO_VOLTAGE*PRESSURE_SENSITIVITY)-PRESSURE_INTERCEPT;
-}//end GetPressure(int)
-
-void Calculate()
-{
-  PID_Controller.Compute();
-  analogWrite(PWM_PIN,pidOutput);
-}//end Calculate()
-
-void Iterate()
-{  
-  pidInput = GetPressure(INPUT_PRESSURE_PIN);
-  pidP = analogRead(P_PIN)*PID_POT_SENSITIVITY;
-  pidI = analogRead(I_PIN)*PID_POT_SENSITIVITY;
-  pidD = analogRead(D_PIN)*PID_POT_SENSITIVITY;
-  PID_Controller.SetTunings(pidP,pidI,pidD);
-  
-  
-}//end Iterate()
-
-
-
-void Initialize()
-{
-  pidInput = GetPressure(INPUT_PRESSURE_PIN);
-  PID_Controller.SetMode(AUTOMATIC);
-  PID_Controller.SetSampleTime(SAMPLE_TIME);
-}
-*/
 

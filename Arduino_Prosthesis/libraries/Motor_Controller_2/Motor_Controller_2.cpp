@@ -1,9 +1,12 @@
 #include "Motor_Controller_2.h"
 
+MotorController* MotorController::sMotorCont=NULL;
+
 MotorController::MotorController(double tInput, double tOutput, double tSetpoint,
                                  double tP, double tI, double tD, int tDirection,
 		                         int tPPin, int tIPin, int tDPin,
-		                         int tInputPin, int tOutputPin)
+		                         int tInputPin, int tOutputPin,
+								 int tBoxInterruptID, int tBoxConnectionPin)
 
 	:PID_Controller(&mcInput, &mcOutput, &mcSetpoint, tP, tI, tD, tDirection)
 {
@@ -18,6 +21,10 @@ MotorController::MotorController(double tInput, double tOutput, double tSetpoint
 	mcDPin = tDPin;
 	mcInputPin = tInputPin;
 	mcOutputPin = tOutputPin;
+	mcBoxInterruptID = tBoxInterruptID;
+	mcBoxConnectionPin = tBoxConnectionPin;
+	mcBoxConnectionDirty = true;
+	sMotorCont = this;
 }
 
 void MotorController::Initialize(int time)
@@ -25,14 +32,39 @@ void MotorController::Initialize(int time)
   mcInput = GetPressure(mcInputPin);
   PID_Controller.SetMode(AUTOMATIC);
   PID_Controller.SetSampleTime(time);
+  PID_PotBox = ProsthesisPotBox(mcBoxInterruptID, mcBoxConnectionPin, mcPPin, mcIPin, mcDPin, mcP, mcI, mcD);
+  PID_PotBox.SetConnectionDirtyCallback(WrapperForMarkConnectionDirty);
+
+  PID_PotBox.AttemptReconnect(&mcBoxIsConnected);
 }//end Initialize(int)
+
+void MotorController::MarkConnectionDirty()
+{
+  mcBoxConnectionDirty = true;
+}//end MarkConnectionDirty()
+
+void MotorController::WrapperForMarkConnectionDirty()
+{
+  //MotorController* sMotorCont = (MotorController*) obj;
+  sMotorCont->MarkConnectionDirty();
+}//end WrapperForMarkConnectionDirty()
 
 void MotorController::Iterate()
 {
   mcInput = GetPressure(mcInputPin);
-  mcP = analogRead(mcPPin)*PID_POT_SENSITIVITY;
-  mcI = 0;//analogRead(mcIPin)*PID_POT_SENSITIVITY;
-  mcD = 0;//analogRead(mcDPin)*PID_POT_SENSITIVITY;
+  
+  if (mcBoxConnectionDirty)
+  {
+    PID_PotBox.AttemptReconnect(&mcBoxIsConnected);
+  }
+  
+  int intP;
+  int intI;
+  int intD;
+  PID_PotBox.GetPID(&intP, &intI, &intD);
+  mcP = intP * PID_POT_SENSITIVITY; //analogRead(mcPPin)*PID_POT_SENSITIVITY;
+  mcI = intI * 0;//PID_POT_SENSITIVITY;
+  mcD = intD * 0;//PID_POT_SENSITIVITY;
   PID_Controller.SetTunings(mcP,mcI,mcD);
 }//end Iterate()
 
@@ -68,3 +100,5 @@ double MotorController::GetD(){return mcD;}
 double MotorController::GetInput(){return mcInput;}
 double MotorController::GetSetpoint(){return mcSetpoint;}
 double MotorController::GetOutput(){return mcOutput;}
+int MotorController::GetBoxIsConnected(){return mcBoxIsConnected;}
+bool MotorController::GetBoxConnectionDirty(){return mcBoxConnectionDirty;}
