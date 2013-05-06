@@ -5,8 +5,6 @@
 #include "DeviceState.h"
 #include "motor_state.h"
 
-//Trivial change
-
 //Handy wrapper for using stream-like serial printing
 template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
 
