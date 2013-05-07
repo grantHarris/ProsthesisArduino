@@ -29,7 +29,15 @@ MotorController::MotorController(double tInput, double tOutput, double tSetpoint
 
 void MotorController::Initialize(int time)
 {
-  mcInput = GetPressure(mcInputPin);
+  mcInput = 0;
+  mcInputTrack = 0;
+  for(int i=0; i<INPUT_AVG_COUNT; i++)
+  {
+    mcInputArray[i] = analogRead(mcInputPin)*(ANALOG_TO_VOLTAGE*PRESSURE_SENSITIVITY)-PRESSURE_INTERCEPT;
+	mcInput +=mcInputArray[i];
+  }
+  mcInput = mcInput/INPUT_AVG_COUNT;
+  
   PID_Controller.SetMode(AUTOMATIC);
   PID_Controller.SetSampleTime(time);
   PID_PotBox = ProsthesisPotBox(mcBoxInterruptID, mcBoxConnectionPin, mcPPin, mcIPin, mcDPin, mcP, mcI, mcD);
@@ -63,8 +71,8 @@ void MotorController::Iterate()
   int intD;
   PID_PotBox.GetPID(&intP, &intI, &intD);
   mcP = intP * PID_POT_SENSITIVITY; //analogRead(mcPPin)*PID_POT_SENSITIVITY;
-  mcI = intI * 0;//PID_POT_SENSITIVITY;
-  mcD = intD * 0;//PID_POT_SENSITIVITY;
+  mcI = intI * PID_POT_SENSITIVITY;
+  mcD = intD * PID_POT_SENSITIVITY;
   PID_Controller.SetTunings(mcP,mcI,mcD);
 }//end Iterate()
 
@@ -76,10 +84,12 @@ bool MotorController::Calculate()
 
 double MotorController::GetPressure(int pin)
 {
+  mcInputTrack++;
   double total = 0;
+  mcInputArray[(mcInputTrack%INPUT_AVG_COUNT)] = analogRead(pin)*(ANALOG_TO_VOLTAGE*PRESSURE_SENSITIVITY)-PRESSURE_INTERCEPT;
   for(int i=0;i<INPUT_AVG_COUNT; i++)
   {
-    total += analogRead(pin)*(ANALOG_TO_VOLTAGE*PRESSURE_SENSITIVITY)-PRESSURE_INTERCEPT;
+    total += mcInputArray[i];
   }
   return (double) (total/INPUT_AVG_COUNT);
 }//end GetPressure(int)

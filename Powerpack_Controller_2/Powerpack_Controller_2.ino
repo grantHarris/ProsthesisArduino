@@ -75,8 +75,8 @@ void loop()
   Interface();
   if (serialPrintFlag == true)
   {
-    //Print_Info_Seg();
-    //Print_Info_Ser();
+    Print_Info_Seg();
+    Print_Info_Ser();
     serialPrintFlag = false;
   }
 }//end loop()
@@ -117,7 +117,7 @@ void WriteValue(int address, double value)
 void Interface()
 {
   //for setpoint switches
-  if( changeSetpointFlag == false && digitalRead(SETPOINT_PLUS_PIN) == HIGH )
+  /*if( changeSetpointFlag == false && digitalRead(SETPOINT_PLUS_PIN) == HIGH )
   {
     MController.AddToSetpoint(50);//pidSetpoint += 50;
     changeSetpointFlag = true;
@@ -130,7 +130,7 @@ void Interface()
   else if(digitalRead(SETPOINT_PLUS_PIN) == LOW && digitalRead(SETPOINT_MINUS_PIN) == LOW)
   {
     changeSetpointFlag = false;
-  }
+  }*/
   /*
   if( changeLoadSenseFlag == false && digitalRead(LOADSENSE_PLUS_PIN) == HIGH )
   {

@@ -56,6 +56,8 @@ class MotorController
 	double mcP;
 	double mcI;
 	double mcD;
+	double mcInputArray[INPUT_AVG_COUNT];
+	int mcInputTrack;
 	int mcPPin;
 	int mcIPin;
 	int mcDPin;
