@@ -2,7 +2,7 @@
 #include <Wire.h>
 #include <MsTimer2.h>
 #include <PID_v1.h>
-#include <Motor_Controller.h>
+#include <MotorController.h>
 
 #define INPUT_PRESSURE_PIN 0
 #define P_PIN 5
