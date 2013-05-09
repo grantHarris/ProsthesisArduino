@@ -17,65 +17,66 @@
 #define LOADSENSE_PLUS_PIN 23
 #define LOADSENSE_MINUS_PIN 22
 
-#define DISPLAY_ADDRESS1 0x70 //This is the default address of the OpenSegment with both solder jumpers open
-#define DISPLAY_ADDRESS2 0x72
+#define DISPLAY_INPUT_PRESSURE 0x70 //This is the default address of the OpenSegment with both solder jumpers open
+#define DISPLAY_SETPOINT_PRESSURE 0x72
+#define CLEAR_DISPLAY 0x76 // Command to clear the 7seg display (sparkfun version)
 
-#define SYSTEM_PRINT_TIME 1000 //ms
-#define INTERRUPT_TIME 1 //ms
-#define SAMPLE_TIME 1 //ms
+#define SYSTEM_PRINT_TIME_MS 1000 //ms
+#define INTERRUPT_TIME_MS 1 //ms
+#define SAMPLE_TIME_MS 1 //ms
 
-#define INITIAL_SETPOINT 1500 //psi
+#define INITIAL_SETPOINT_PSI 1500 //psi
 
-double pidInput = 0;
-double pidSetpoint = 0;
-double pidOutput = 0;
-double pidP = 0;
-double pidI = 0;
-double pidD = 0;
+double mPIDInput = 0;
+double mPIDSetpoint = 0;
+double mPIDOutput = 0;
+double mPIDP = 0;
+double mPIDI = 0;
+double mPIDD = 0;
 
-boolean changeSetpointFlag = false; //if switch is pressed
+boolean mChangeSetpointFlag = false; //if switch is pressed
 
-unsigned long printTimer = 0;
-boolean serialPrintFlag = false;
+unsigned long mLastDebugPrintMilli = 0;
+boolean mPrintDebugStats = false;
 
-MotorController MController(pidInput, pidOutput, pidSetpoint, pidP, pidI, pidD, DIRECT, P_PIN, I_PIN, D_PIN, INPUT_PRESSURE_PIN, PWM_PIN, POT_BOX_INTERRUPT_ID, POT_BOX_INTERRUPT_PIN);
+MotorController MController(mPIDInput, mPIDOutput, mPIDSetpoint, mPIDP, mPIDI, mPIDD, DIRECT, P_PIN, I_PIN, D_PIN, INPUT_PRESSURE_PIN, PWM_PIN, POT_BOX_INTERRUPT_ID, POT_BOX_INTERRUPT_PIN);
 
 void setup()
 {
   Serial.begin(9600);
   Wire.begin();
-  Wire.beginTransmission(DISPLAY_ADDRESS1);
-  Wire.write('v');
+  Wire.beginTransmission(DISPLAY_INPUT_PRESSURE);
+  Wire.write(CLEAR_DISPLAY);
   Wire.endTransmission();
-  Wire.beginTransmission(DISPLAY_ADDRESS2);
-  Wire.write('v');
+  Wire.beginTransmission(DISPLAY_SETPOINT_PRESSURE);
+  Wire.write(CLEAR_DISPLAY);
   Wire.endTransmission();
   
-  MController.SetSetpoint(INITIAL_SETPOINT);
-  MController.Initialize(SAMPLE_TIME);
-  MsTimer2::set(INTERRUPT_TIME,TimedCommands);
+  MController.SetSetpoint(INITIAL_SETPOINT_PSI);
+  MController.Initialize(SAMPLE_TIME_MS);
+  MsTimer2::set(INTERRUPT_TIME_MS,TimedCommands);
   MsTimer2::start();
 }//end setup()
 
 void TimedCommands()
 {
   MController.Calculate();
-  if( (millis()-printTimer) > SYSTEM_PRINT_TIME)
+  if( (millis()-mLastDebugPrintMilli) > SYSTEM_PRINT_TIME_MS)
   {
-    printTimer = millis();
-    serialPrintFlag = true;
+    mLastDebugPrintMilli = millis();
+    mPrintDebugStats = true;
   }
 }//end TimedCommands()
 
 void loop()
 {
-  MController.Iterate();
-  Interface();
-  if (serialPrintFlag == true)
+  MController.UpdateState();
+  ReadFromInterface();
+  if (mPrintDebugStats == true)
   {
     Print_Info_Seg();
     Print_Info_Ser();
-    serialPrintFlag = false;
+    mPrintDebugStats = false;
   }
 }//end loop()
 
@@ -91,43 +92,41 @@ void Print_Info_Ser()
 
 void Print_Info_Seg()
 {
-  WriteValue(DISPLAY_ADDRESS1, MController.GetInput());
-  WriteValue(DISPLAY_ADDRESS2, MController.GetSetpoint());
+  WriteValue(DISPLAY_INPUT_PRESSURE, (int) MController.GetInput());
+  WriteValue(DISPLAY_SETPOINT_PRESSURE, (int) MController.GetSetpoint());
 }
 
-void WriteValue(int address, double value)
+void WriteValue(int address, int value)
 {
-  int truncatedValue = (int)value;
-  
   Wire.beginTransmission(address);
   Wire.write(0x79);
   Wire.write(0x00);
-  Wire.write(truncatedValue/1000);
-  truncatedValue %= 1000;
-  Wire.write(truncatedValue/100);
-  truncatedValue %= 100;
-  Wire.write(truncatedValue/10);
-  truncatedValue %= 10;
-  Wire.write(truncatedValue);
+  Wire.write(value/1000);
+  value %= 1000;
+  Wire.write(value/100);
+  value %= 100;
+  Wire.write(value/10);
+  value %= 10;
+  Wire.write(value);
   Wire.endTransmission();
 }
 
-void Interface()
+void ReadFromInterface()
 {
   //for setpoint switches
-  if( changeSetpointFlag == false && digitalRead(SETPOINT_PLUS_PIN) == HIGH )
+  if( mChangeSetpointFlag == false && digitalRead(SETPOINT_PLUS_PIN) == HIGH )
   {
     MController.AddToSetpoint(50);
-    changeSetpointFlag = true;
+    mChangeSetpointFlag = true;
   }
-  else if( changeSetpointFlag == false && digitalRead(SETPOINT_MINUS_PIN) == HIGH )
+  else if( mChangeSetpointFlag == false && digitalRead(SETPOINT_MINUS_PIN) == HIGH )
   {
     MController.AddToSetpoint(-50);
-    changeSetpointFlag = true;
+    mChangeSetpointFlag = true;
   }
   else if(digitalRead(SETPOINT_PLUS_PIN) == LOW && digitalRead(SETPOINT_MINUS_PIN) == LOW)
   {
-    changeSetpointFlag = false;
+    mChangeSetpointFlag = false;
   }
 }//end Interface()
 

@@ -54,7 +54,7 @@ void MotorController::WrapperForMarkConnectionDirty()
   sMotorCont->MarkConnectionDirty();
 }//end WrapperForMarkConnectionDirty()
 
-void MotorController::Iterate()
+void MotorController::UpdateState()
 {
   mcInput = GetPressure(mcInputPin);
   
