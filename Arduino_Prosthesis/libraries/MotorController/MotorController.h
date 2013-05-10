@@ -11,9 +11,9 @@ class MotorController
     
 	//Constant terms
 	#define PID_POT_SENSITIVITY 0.02
-    #define ANALOG_TO_VOLTAGE 0.004887586
-    #define PRESSURE_SENSITIVITY 2500.0
-    #define PRESSURE_INTERCEPT 1230.0
+    #define ANALOG_TO_VOLTAGE 0.004892494
+    #define PRESSURE_SENSITIVITY 1386.2
+    #define PRESSURE_INTERCEPT 1246.7
 	#define INPUT_AVG_COUNT 5
 	
     MotorController(double tInput, double tOutput, double tSetpoint,
