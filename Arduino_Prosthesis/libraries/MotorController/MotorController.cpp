@@ -2,6 +2,10 @@
 
 MotorController* MotorController::sMotorCont=NULL;
 
+double MotorController::mcSetpoint = 0;
+double MotorController::mcInput = 0;
+double MotorController::mcOutput = 0;
+
 MotorController::MotorController(double tInput, double tOutput, double tSetpoint,
                                  double tP, double tI, double tD, int tDirection,
 		                         int tPPin, int tIPin, int tDPin,

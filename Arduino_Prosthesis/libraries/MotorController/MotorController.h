@@ -50,9 +50,9 @@ class MotorController
 	PID PID_Controller;
 	ProsthesisPotBox PID_PotBox;
 	
-    double mcInput;
-	double mcOutput;
-	double mcSetpoint;
+    static double mcInput;
+	static double mcOutput;
+	static double mcSetpoint;
 	double mcP;
 	double mcI;
 	double mcD;
