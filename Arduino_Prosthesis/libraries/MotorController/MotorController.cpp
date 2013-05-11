@@ -58,24 +58,24 @@ void MotorController::WrapperForMarkConnectionDirty()
   sMotorCont->MarkConnectionDirty();
 }//end WrapperForMarkConnectionDirty()
 
-void MotorController::UpdateState()
+void MotorController::UpdateState(int randomValue)
 {
-  mcInput = GetPressure(mcInputPin);
+  mcInput = GetPressure(randomValue);
   
-  if (mcBoxConnectionDirty)
+  /*if (mcBoxConnectionDirty)
   {
     PID_PotBox.AttemptReconnect(&mcBoxIsConnected);
-  }
+  }*/
   
-  int intP;
+  /*int intP;
   int intI;
   int intD;
   PID_PotBox.GetPID(&intP, &intI, &intD);
   mcP = intP * PID_POT_SENSITIVITY;
   mcI = intI * PID_POT_SENSITIVITY;
   mcD = intD * PID_POT_SENSITIVITY;
-  PID_Controller.SetTunings(mcP,mcI,mcD);
-}//end Iterate()
+  PID_Controller.SetTunings(mcP,mcI,mcD);*/
+}//end UpdateState()
 
 bool MotorController::Calculate()
 {
@@ -83,16 +83,17 @@ bool MotorController::Calculate()
   analogWrite(mcOutputPin,mcOutput);
 }//end Calculate()
 
-double MotorController::GetPressure(int pin)
+double MotorController::GetPressure(int value)
 {
-  mcInputTrack++;
+  /*mcInputTrack++;
   double total = 0;
   mcInputArray[(mcInputTrack%INPUT_AVG_COUNT)] = analogRead(pin);
   for(int i=0;i<INPUT_AVG_COUNT; i++)
   {
     total += mcInputArray[i];
   }
-  return ((double)total/(double)INPUT_AVG_COUNT)*(ANALOG_TO_VOLTAGE*PRESSURE_SENSITIVITY)-PRESSURE_INTERCEPT;
+  total = total/(double)INPUT_AVG_COUNT;*/
+  return ((double)value)*(ANALOG_TO_VOLTAGE*PRESSURE_SENSITIVITY)-PRESSURE_INTERCEPT;
 }//end GetPressure(int)
 
 void MotorController::SetSetpoint(double newSet)

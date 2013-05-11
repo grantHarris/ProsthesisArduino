@@ -26,7 +26,7 @@ class MotorController
 	
 	void MarkConnectionDirty();
 	
-	void UpdateState();
+	void UpdateState(int);
   
     bool Calculate();
   

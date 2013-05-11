@@ -1,3 +1,5 @@
+//Results are interpreted in the dropbox under 2012 Powerpack Control/Testing/Arduino Pressure Input Tests
+
 #include <pot_box.h>
 #include <Wire.h>
 #include <MsTimer2.h>
@@ -5,9 +7,9 @@
 #include <MotorController.h>
 
 #define INPUT_PRESSURE_PIN 0
-#define P_PIN 5
-#define I_PIN 6
-#define D_PIN 7
+#define P_PIN 3
+#define I_PIN 4
+#define D_PIN 5
 #define PWM_PIN 13
 #define POT_BOX_INTERRUPT_ID 0
 #define POT_BOX_INTERRUPT_PIN 2
@@ -21,7 +23,7 @@
 #define DISPLAY_SETPOINT_PRESSURE 0x72
 #define CLEAR_DISPLAY 0x76 // Command to clear the 7seg display (sparkfun version)
 
-#define SYSTEM_PRINT_TIME_MS 1000 //ms
+#define SYSTEM_PRINT_TIME_MS 100 //ms
 #define INTERRUPT_TIME_MS 1 //ms
 #define SAMPLE_TIME_MS 1 //ms
 
@@ -41,6 +43,8 @@ boolean mPrintDebugStats = false;
 
 MotorController MController(mPIDInput, mPIDOutput, mPIDSetpoint, mPIDP, mPIDI, mPIDD, DIRECT, P_PIN, I_PIN, D_PIN, INPUT_PRESSURE_PIN, PWM_PIN, POT_BOX_INTERRUPT_ID, POT_BOX_INTERRUPT_PIN);
 
+int mRandomInput;
+
 void setup()
 {
   Serial.begin(9600);
@@ -54,6 +58,9 @@ void setup()
   
   MController.SetSetpoint(INITIAL_SETPOINT_PSI);
   MController.Initialize(SAMPLE_TIME_MS);
+  
+  randomSeed(1);
+  
   MsTimer2::set(INTERRUPT_TIME_MS,TimedCommands);
   MsTimer2::start();
 }//end setup()
@@ -70,11 +77,12 @@ void TimedCommands()
 
 void loop()
 {
-  MController.UpdateState();
-  ReadFromInterface();
+  mRandomInput = random(0,1024);
+  MController.UpdateState(mRandomInput);
+  //ReadFromInterface();
   if (mPrintDebugStats == true)
   {
-    Print_Info_Seg();
+    //Print_Info_Seg();
     Print_Info_Ser();
     mPrintDebugStats = false;
   }
@@ -82,11 +90,12 @@ void loop()
 
 void Print_Info_Ser()
 {
-  Serial.print("P:");Serial.println(MController.GetP());
-  Serial.print("I:");Serial.println(MController.GetI());
-  Serial.print("D:");Serial.println(MController.GetD());
-  Serial.print("In:");Serial.println(MController.GetInput());
-  Serial.print("Set:");Serial.println(MController.GetSetpoint());
+  Serial.print("P:");Serial.print(MController.GetP());Serial.print(",");
+  Serial.print("I:");Serial.print(MController.GetI());Serial.print(",");
+  Serial.print("D:");Serial.print(MController.GetD());Serial.print(",");
+  Serial.print("Pot:");Serial.print(mRandomInput);Serial.print(",");
+  Serial.print("In:");Serial.print(MController.GetInput());Serial.print(",");
+  Serial.print("Set:");Serial.print(MController.GetSetpoint());Serial.print(",");
   Serial.print("Out:");Serial.println(MController.GetOutput());
 }//end Print_Info()
 
