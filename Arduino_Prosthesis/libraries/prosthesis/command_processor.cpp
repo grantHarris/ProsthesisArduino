@@ -8,10 +8,10 @@ template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg);
 static tTypeIDRequestCallback mTypeIDRequestCallback = NULL;
 static tTelemetryToggleRequestCallback mTelemetryToggleCallback = NULL;
 static tEnableToggleRequestCallback mEnableCallback = NULL;
+static tEnableHeartbeatRequestCallback mHeartbeatCallback = NULL;
 
 namespace CommandProcessor
 {  
-  /* Process message like: { "pwm": { "8": 0, "9": 128 } } */
   void ProcessMessage(aJsonObject *msg)
   {
    aJsonObject *id = aJson.getObjectItem(msg, PacketKeys::kCommandID);
@@ -46,6 +46,15 @@ namespace CommandProcessor
          returnMessage = mEnableCallback(msg, toggleVal != NULL ? toggleVal->valuebool : false);
        }        
      }     
+     //Check for heartbeat enable
+     else if (strncmp(idVal, CommandIDs::kHeartBeat, strlen(CommandIDs::kHeartBeat)) == 0)
+     {
+       if (mHeartbeatCallback != NULL)
+       {
+         aJsonObject *toggleVal = aJson.getObjectItem(msg, PacketKeys::kEnable);
+         returnMessage = mHeartbeatCallback(msg, toggleVal != NULL ? toggleVal->valuebool : false);
+       }     
+     }
      
      //Fire the return message if one came back
      if (returnMessage != NULL)
@@ -78,6 +87,11 @@ namespace CommandProcessor
   void SetEnableToggleRequestCallback(tEnableToggleRequestCallback req)
   {
     mEnableCallback = req;
+  }
+  
+  void SetHeartbeatRequestCallback(tEnableHeartbeatRequestCallback req)
+  {
+    mHeartbeatCallback = req;
   }
   
   void SendMessage(aJsonObject *msg)

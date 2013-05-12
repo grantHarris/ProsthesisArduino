@@ -5,7 +5,6 @@
 #include "DeviceState.h"
 #include "motor_state.h"
 
-//Trivial change
 
 //Handy wrapper for using stream-like serial printing
 template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
@@ -20,10 +19,13 @@ const int kActiveLEDPin = 13;
 
 aJsonStream mJSONSerialStream(&Serial);
 unsigned long mLastTelem;
+unsigned long mLastHeartbeat;
 unsigned long mLastMillis;
 unsigned long mActiveMillis;
 int mTelemetryPeriodMS;
+int mHeartbeatPeriodMS;
 bool mTelemetryEnabled = false;
+bool mHeartbeatEnabled = false;
 
 MotorState::tMotorControllerState mDeviceState;
 
@@ -32,6 +34,7 @@ void setup()
   CommandProcessor::SetTypeIDRequestCallback(IDRequestCallback);
   CommandProcessor::SetTelemetryRequestCallback(TelemetryEnableCb);
   CommandProcessor::SetEnableToggleRequestCallback(InitializeDeviceCb);
+  CommandProcessor::SetHeartbeatRequestCallback(HeartbeatEnableCb);
   Serial.begin(9600);
   
   //Initialize our device state
@@ -50,21 +53,33 @@ void setup()
   digitalWrite(kActiveLEDPin, LOW);
   
   mTelemetryPeriodMS = 50;
+  mHeartbeatPeriodMS = 1000;
   mLastTelem = 0;
+  mLastHeartbeat = 0;
 }
 
 void loop()
 {
    if (mJSONSerialStream.available()) 
    {
-     /* First, skip any accidental whitespace like newlines. */
+     // First, skip any accidental whitespace like newlines.
      mJSONSerialStream.skip();
    }
 
   if (mJSONSerialStream.available()) 
   {
-     /* Something real on input, let's take a look. */
+     // Something real on input, let's take a look. 
      aJsonObject *msg = aJson.parse(&mJSONSerialStream);
+     
+#if DEBUG_CBS     
+      char *outMsg = aJson.print(msg);
+      if (outMsg != NULL)
+      {
+        Serial << outMsg << "\n"; 
+        free(outMsg);
+      }     
+#endif
+     
      CommandProcessor::ProcessMessage(msg);
      aJson.deleteItem(msg);    
   }
@@ -84,6 +99,23 @@ void loop()
       aJson.deleteItem(msg);
     }
     mLastTelem = millis(); 
+  }
+  
+  //Soft realtime heartbeat. It is up to the client to decide how many deadlines have passed before assuming the Arduino has gone rogue
+  if (mHeartbeatEnabled && millis() - mLastHeartbeat > mHeartbeatPeriodMS)
+  {
+#if DEBUG_CBS    
+    Serial << "Heartbeat. Diff is: " << millis() - mLastHeartbeat << "ms\n";    
+#endif  
+    
+    aJsonObject *msg = aJson.createObject();
+    if (msg != NULL)
+    {
+      aJson.addItemToObject(msg, CommandProcessor::PacketKeys::kCommandID, aJson.createItem(CommandProcessor::CommandIDs::kHeartBeat));
+      CommandProcessor::SendMessage(msg);
+      aJson.deleteItem(msg);
+    }
+    mLastHeartbeat = millis(); 
   }
   
   switch (mDeviceState.State)
@@ -119,7 +151,7 @@ aJsonObject * TelemetryEnableCb(aJsonObject *msg, bool enable)
 {
   //No ACK necessary for this
   mTelemetryEnabled = enable;
-  aJsonObject *telemPeriod = aJson.getObjectItem(msg, CommandProcessor::PacketKeys::kTelemetryPeriod);
+  aJsonObject *telemPeriod = aJson.getObjectItem(msg, CommandProcessor::PacketKeys::kPeriod);
   if (telemPeriod != NULL)
   {
      mTelemetryPeriodMS = telemPeriod->valueint;
@@ -127,6 +159,23 @@ aJsonObject * TelemetryEnableCb(aJsonObject *msg, bool enable)
      const char *enableText = mTelemetryEnabled ? "on" : "off";
      const char *deviceState = mDeviceState.State == Active ? "Enabled" : "Disabled";
      Serial << "Setting telemetry period to " << mTelemetryPeriodMS << "ms. Telemetry is " << enableText << ". Device is " << deviceState << "\n";
+#endif
+  }
+  return NULL;
+}
+
+aJsonObject * HeartbeatEnableCb(aJsonObject *msg, bool enable)
+{
+  //No ACK necessary for this
+  mHeartbeatEnabled = enable;
+  aJsonObject *heartbeatPeriod = aJson.getObjectItem(msg, CommandProcessor::PacketKeys::kPeriod);
+  if (heartbeatPeriod != NULL)
+  {
+     mHeartbeatPeriodMS = heartbeatPeriod->valueint;
+#if DEBUG_CBS
+     const char *enableText = mHeartbeatEnabled ? "on" : "off";
+     const char *deviceState = mDeviceState.State == Active ? "Enabled" : "Disabled";
+     Serial << "Setting heartbeat period to " << mTelemetryPeriodMS << "ms. Heartbeat is " << enableText << ". Device is " << deviceState << "\n";
 #endif
   }
   return NULL;
