@@ -1,6 +1,8 @@
 #ifndef __MOTOR_STATE_H__
 #define __MOTOR_STATE_H__
 
+#define OUTPUT_PID_TUNINGS 1
+
 #include "DeviceState.h"
 
 #ifndef NUM_MOTOR_CONTROLLERS
@@ -18,6 +20,11 @@ namespace MotorState
     bool IsLoadSense;
     float MotorDutyCycle[NUM_MOTOR_CONTROLLERS];
     float PressureSetPoint;
+#if OUTPUT_PID_TUNINGS
+    float PTuning[NUM_MOTOR_CONTROLLERS];
+    float ITuning[NUM_MOTOR_CONTROLLERS];
+    float DTuning[NUM_MOTOR_CONTROLLERS];
+#endif    
     DeviceStates State;
   } tMotorControllerState;
   

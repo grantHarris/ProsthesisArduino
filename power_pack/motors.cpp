@@ -3,7 +3,6 @@
 //#define DEBUG_HIP_MOTOR 1
 
 #include <Arduino.h>
-#include <PID_v1.h>
 #include <pot_box.h>
 #include "motors.h"
 #include "pins.h"

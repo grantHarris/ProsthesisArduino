@@ -86,9 +86,34 @@ void loop()
   //Soft realtime telemetry. Who cares about missed deadlines for these? The mission critical stuff goes into the interrupt CBs
   if (mTelemetryEnabled && millis() - mLastTelem > mTelemetryPeriodMS)
   {
+#if DEBUG_CBS        
     const char *deviceState = mDeviceState.State == Active ? "Enabled" : "Disabled";
-#if DEBUG_CBS    
     Serial << "Telem. Diff is: " << millis() - mLastTelem << "ms. Device is " << deviceState << "\n";    
+#endif    
+
+    //Update our state with the latest info
+    const ProsthesisMotors::tMotorConfig *hipConfig = ProsthesisMotors::GetHipMotorConfig();
+    const ProsthesisMotors::tMotorConfig *kneeConfig = ProsthesisMotors::GetKneeMotorConfig();
+    
+    mDeviceState.MotorDutyCycle[HIP_MOTOR_INDEX] = hipConfig->mThrottle / 255.0f;
+    mDeviceState.OutputPressure[HIP_MOTOR_INDEX] = hipConfig->mSampleAvg;
+    
+#if OUTPUT_PID_TUNINGS
+    mDeviceState.PTuning[HIP_MOTOR_INDEX] = hipConfig->mP;
+    mDeviceState.ITuning[HIP_MOTOR_INDEX] = hipConfig->mI;
+    mDeviceState.DTuning[HIP_MOTOR_INDEX] = hipConfig->mD;    
+#endif
+    
+    //Assumption, only one set point for the whole system?
+    mDeviceState.PressureSetPoint = hipConfig->mPressureSetpoint;
+    
+    mDeviceState.MotorDutyCycle[KNEE_MOTOR_INDEX] = kneeConfig->mThrottle / 255.0f;
+    mDeviceState.OutputPressure[KNEE_MOTOR_INDEX] = kneeConfig->mSampleAvg;
+    
+#if OUTPUT_PID_TUNINGS
+    mDeviceState.PTuning[KNEE_MOTOR_INDEX] = kneeConfig->mP;
+    mDeviceState.ITuning[KNEE_MOTOR_INDEX] = kneeConfig->mI;
+    mDeviceState.DTuning[KNEE_MOTOR_INDEX] = kneeConfig->mD;    
 #endif    
     
     aJsonObject *msg = MotorState::MotorStateToJSON(mDeviceState);
@@ -152,7 +177,7 @@ aJsonObject * TelemetryEnableCb(aJsonObject *msg, bool enable)
   mTelemetryEnabled = enable;
   aJsonObject *telemPeriod = aJson.getObjectItem(msg, CommandProcessor::PacketKeys::kPeriod);
   if (telemPeriod != NULL)
-  {
+  {    
      mTelemetryPeriodMS = telemPeriod->valueint;
 #if DEBUG_CBS
      const char *enableText = mTelemetryEnabled ? "on" : "off";

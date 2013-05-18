@@ -2,6 +2,7 @@
 #include <aJSON.h>
 #include <command_processor.h>
 #include "motor_state.h"
+#include "motors.h"
 
 namespace MotorState
 {
@@ -17,11 +18,14 @@ namespace MotorState
     static const char *kMotorDutyCycleArray = "Dt";
     static const char *kDeviceStateKey = "Ds";
     static const char *kPressureSetPoint = "Ps";
+    static const char *kProportionalTuning = "P";
+    static const char *kIntegralTuning = "I";
+    static const char *kDifferentialTuning = "D";
   }  
 }
 
 aJsonObject *MotorState::MotorStateToJSON(tMotorControllerState state)
-{
+{  
   aJsonObject *msg = aJson.createObject();
   aJson.addItemToObject(msg, CommandProcessor::PacketKeys::kCommandID, aJson.createItem(CommandProcessor::CommandIDs::kTelemetryID));
   
@@ -32,14 +36,26 @@ aJsonObject *MotorState::MotorStateToJSON(tMotorControllerState state)
   aJsonObject *motorFlowRates = aJson.createArray();    
   aJsonObject *motorDutyCycles = aJson.createArray();    
   
+#if OUTPUT_PID_TUNINGS
+  aJsonObject *motorPTunings = aJson.createArray();    
+  aJsonObject *motorITunings = aJson.createArray();    
+  aJsonObject *motorDTunings = aJson.createArray();      
+#endif
+  
   for (int i = 0; i < NUM_MOTOR_CONTROLLERS; ++i)
   {
-     aJson.addItemToArray(motorCurrents, aJson.createItem(state.Currents[i]));
-     aJson.addItemToArray(motorVoltages, aJson.createItem(state.Millivolts[i]));
-     aJson.addItemToArray(motorOutputPressures, aJson.createItem(state.OutputPressure[i]));
-     aJson.addItemToArray(motorLoadPressures, aJson.createItem(state.LoadPressure[i]));
-     aJson.addItemToArray(motorFlowRates, aJson.createItem(state.FlowRate[i]));     
-     aJson.addItemToArray(motorDutyCycles, aJson.createItem(state.MotorDutyCycle[i]));          
+    aJson.addItemToArray(motorCurrents, aJson.createItem(state.Currents[i]));
+    aJson.addItemToArray(motorVoltages, aJson.createItem(state.Millivolts[i]));
+    aJson.addItemToArray(motorOutputPressures, aJson.createItem(state.OutputPressure[i]));
+    aJson.addItemToArray(motorLoadPressures, aJson.createItem(state.LoadPressure[i]));
+    aJson.addItemToArray(motorFlowRates, aJson.createItem(state.FlowRate[i]));            
+    aJson.addItemToArray(motorDutyCycles, aJson.createItem(state.MotorDutyCycle[i]));     
+
+#if OUTPUT_PID_TUNINGS
+    aJson.addItemToArray(motorPTunings, aJson.createItem(state.PTuning[i])); 
+    aJson.addItemToArray(motorITunings, aJson.createItem(state.ITuning[i])); 
+    aJson.addItemToArray(motorDTunings, aJson.createItem(state.DTuning[i])); 
+#endif    
   }
   
   aJson.addItemToObject(msg, MotorState::MotorStateKeys::kUsingLoadSenseKey, aJson.createItem(state.IsLoadSense));
@@ -52,6 +68,12 @@ aJsonObject *MotorState::MotorStateToJSON(tMotorControllerState state)
   aJson.addItemToObject(msg, MotorState::MotorStateKeys::kLoadPressureArray, motorLoadPressures);  
   aJson.addItemToObject(msg, MotorState::MotorStateKeys::kFlowRateArray, motorFlowRates);
   aJson.addItemToObject(msg, MotorState::MotorStateKeys::kMotorDutyCycleArray, motorDutyCycles);  
+  
+#if OUTPUT_PID_TUNINGS
+  aJson.addItemToObject(msg, MotorState::MotorStateKeys::kProportionalTuning, motorPTunings);
+  aJson.addItemToObject(msg, MotorState::MotorStateKeys::kIntegralTuning, motorITunings);  
+  aJson.addItemToObject(msg, MotorState::MotorStateKeys::kDifferentialTuning, motorDTunings);  
+#endif  
   
   return msg; 
 }

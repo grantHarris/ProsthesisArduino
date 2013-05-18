@@ -1,7 +1,11 @@
 #ifndef __PROSTHESIS_MOTORS_H__
 #define __PROSTHESIS_MOTORS_H__
 
+#include <PID_v1.h>
+
 #define PID_COMPUTE_PERIOD_MS 25
+#define HIP_MOTOR_INDEX 0
+#define KNEE_MOTOR_INDEX 1
 
 namespace ProsthesisMotors
 {
