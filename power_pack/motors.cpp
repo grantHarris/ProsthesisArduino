@@ -1,3 +1,7 @@
+//#define DEBUG_POT_BOX 1
+//#define DEBUG_KNEE_MOTOR 1
+//#define DEBUG_HIP_MOTOR 1
+
 #include <Arduino.h>
 #include <PID_v1.h>
 #include <pot_box.h>
@@ -52,7 +56,6 @@ namespace ProsthesisMotors
  
   tMotorConfig mKneeMotorConfig;
   tMotorConfig mHipMotorConfig;
-  ProsthesisPotBox mPotBox(POT_BOX_INTERRUPT_ID, POT_BOX_INTERRUPT_PIN, POT_BOX_P_PIN, POT_BOX_I_PIN, POT_BOX_D_PIN, 0, 0, 0);
   
   int mPotBoxConnected = false;
   int mPotBoxConnectionDirty = false;
@@ -64,8 +67,8 @@ namespace ProsthesisMotors
   
   void Initialize()
   {
-    mPotBox.SetConnectionDirtyCallback(PotBoxConnectionDirtyCB);
-    mPotBox.AttemptReconnect(&mPotBoxConnected);
+    ProsthesisPotBox::Initialize(POT_BOX_INTERRUPT_ID, POT_BOX_INTERRUPT_PIN, POT_BOX_P_PIN, POT_BOX_I_PIN, POT_BOX_D_PIN, 0, 0, 0);
+    ProsthesisPotBox::SetConnectionDirtyCallback(PotBoxConnectionDirtyCB);
   }
   
   void SetKneeMotorPinout(int kneeThrottleOut, int kneePressureIn, int kneeLoadIn)
@@ -85,35 +88,38 @@ namespace ProsthesisMotors
   void ToggleKneeMotorControl(bool toggle)
   {
     mKneeMotorConfig.mActive = toggle;
-    analogWrite(mKneeMotorConfig.mThrottlePin, 255);
+    analogWrite(mKneeMotorConfig.mThrottlePin, 0);
   }
   
   void ToggleHipMotorControl(bool toggle)
   {
     mHipMotorConfig.mActive = toggle;
-    analogWrite(mHipMotorConfig.mThrottlePin, 255);
+    analogWrite(mHipMotorConfig.mThrottlePin, 0);
   }
  
   void UpdateMotors()
   { 
     if (mPotBoxConnectionDirty || !mPotBoxConnected)
     {
-      mPotBox.AttemptReconnect(&mPotBoxConnected);
+      ProsthesisPotBox::AttemptReconnect(&mPotBoxConnected);
       mPotBoxConnectionDirty = false;
     }
     
-   // if (mPotBoxConnected)
-    {
-      int intP;
-      int intI;
-      int intD;
-      mPotBox.GetPID(&intP, &intI, &intD);
-      mKneeMotorConfig.mP = intP * PID_POT_SENSITIVITY;
-      mKneeMotorConfig.mI = intI * PID_POT_SENSITIVITY;
-      mKneeMotorConfig.mD = intD * PID_POT_SENSITIVITY;
-      mKneeMotorConfig.mPIDController.SetTunings(mKneeMotorConfig.mP, mKneeMotorConfig.mI, mKneeMotorConfig.mD);
-      //Serial << "Read pot box " << intP << " " << intI << " " << intD << "\n";
-    }
+    int intP;
+    int intI;
+    int intD;
+    ProsthesisPotBox::GetPID(&intP, &intI, &intD);
+    mKneeMotorConfig.mP = intP * PID_POT_SENSITIVITY;
+    mKneeMotorConfig.mI = intI * PID_POT_SENSITIVITY;
+    mKneeMotorConfig.mD = intD * PID_POT_SENSITIVITY;
+    mKneeMotorConfig.mPIDController.SetTunings(mKneeMotorConfig.mP, mKneeMotorConfig.mI, mKneeMotorConfig.mD);
+#if DEBUG_POT_BOX || DEBUG_KNEE_MOTOR || DEBUG_HIP_MOTOR
+    delay(50);
+#endif
+    
+#if DEBUG_POT_BOX
+    Serial << "Read pot box " << intP << " " << intI << " " << intD << "\n";
+#endif
     
     if (mKneeMotorConfig.mActive)
     {
@@ -121,7 +127,9 @@ namespace ProsthesisMotors
       mKneeMotorConfig.mSampleAvg = 0.1 * ANALOG_READ_TO_PRESSURE(analogRead(mKneeMotorConfig.mPressureInputPin)) + 0.9 * mKneeMotorConfig.mSampleAvg;
       if (mKneeMotorConfig.mPIDController.Compute())
       {
-        //Serial << "Knee: T: " << (int)mKneeMotorConfig.mThrottle << ". Press: " << mKneeMotorConfig.mSampleAvg << "PID: " << mKneeMotorConfig.mP << ", " << mKneeMotorConfig.mI << ", " << mKneeMotorConfig.mD << "\n";
+#if DEBUG_KNEE_MOTOR
+          Serial << "K: T: " << (int)mKneeMotorConfig.mThrottle << ". P: " << mKneeMotorConfig.mSampleAvg << " PID: " << mKneeMotorConfig.mP << ", " << mKneeMotorConfig.mI << ", " << mKneeMotorConfig.mD << "\n";
+#endif
         analogWrite(mKneeMotorConfig.mThrottlePin, mKneeMotorConfig.mThrottle);
       }
     }
@@ -132,7 +140,9 @@ namespace ProsthesisMotors
       mHipMotorConfig.mSampleAvg = 0.1 * ANALOG_READ_TO_PRESSURE(analogRead(mHipMotorConfig.mPressureInputPin)) + 0.9 * mHipMotorConfig.mSampleAvg;
       if (mHipMotorConfig.mPIDController.Compute())
       {
-        //Serial << "Hip: T: " << (int)mKneeMotorConfig.mThrottle << ". Press: " << mKneeMotorConfig.mSampleAvg << "PID: " << mKneeMotorConfig.mP << ", " << mKneeMotorConfig.mI << ", " << mKneeMotorConfig.mD << "\n";        
+#if DEBUG_HIP_MOTOR        
+        Serial << "H: T: " << (int)mKneeMotorConfig.mThrottle << ". P: " << mKneeMotorConfig.mSampleAvg << " PID: " << mKneeMotorConfig.mP << ", " << mKneeMotorConfig.mI << ", " << mKneeMotorConfig.mD << "\n";        
+#endif
         analogWrite(mHipMotorConfig.mThrottlePin, mHipMotorConfig.mThrottle);
       }
     }
