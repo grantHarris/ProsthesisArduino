@@ -8,14 +8,17 @@
 #include "motors.h"
 #include "pins.h"
 
+#if DEBUG_POT_BOX || DEBUG_KNEE_MOTOR || DEBUG_HIP_MOTOR
 //Handy wrapper for using stream-like serial printing
 template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
+#endif
 
 //Constant terms
 #define PID_POT_SENSITIVITY 0.02
 #define ANALOG_TO_VOLTAGE 0.004892494
 #define PRESSURE_SENSITIVITY 1386.2
 #define PRESSURE_INTERCEPT 1246.7
+#define PID_COMPUTE_PERIOD_MS 25
 
 #define ANALOG_READ_TO_PRESSURE(x) (((double)x * ANALOG_TO_VOLTAGE * PRESSURE_SENSITIVITY) - PRESSURE_INTERCEPT)
 
@@ -34,7 +37,7 @@ typedef struct tMotorConfig {
   mPIDController(&mSampleAvg, &mThrottle, &mPressureSetpoint, 0, 0, 0, DIRECT)
   {
     mPIDController.SetMode(AUTOMATIC);
-    mPIDController.SetSampleTime(50);
+    mPIDController.SetSampleTime(PID_COMPUTE_PERIOD_MS);
   }
  
   uint8_t mThrottlePin;
@@ -68,6 +71,7 @@ namespace ProsthesisMotors
   void Initialize()
   {
     ProsthesisPotBox::Initialize(POT_BOX_INTERRUPT_ID, POT_BOX_INTERRUPT_PIN, POT_BOX_P_PIN, POT_BOX_I_PIN, POT_BOX_D_PIN, 0, 0, 0);
+    mPotBoxConnected = ProsthesisPotBox::IsConnected();
     ProsthesisPotBox::SetConnectionDirtyCallback(PotBoxConnectionDirtyCB);
   }
   
@@ -102,24 +106,33 @@ namespace ProsthesisMotors
     if (mPotBoxConnectionDirty || !mPotBoxConnected)
     {
       ProsthesisPotBox::AttemptReconnect(&mPotBoxConnected);
+#if DEBUG_POT_BOX
+      const char *connectMsg = mPotBoxConnected ? "connected" : "disconnected";
+      Serial << "PID box is now " << connectMsg << "\n";
+#endif
+      
       mPotBoxConnectionDirty = false;
     }
     
-    int intP;
-    int intI;
-    int intD;
-    ProsthesisPotBox::GetPID(&intP, &intI, &intD);
-    mKneeMotorConfig.mP = intP * PID_POT_SENSITIVITY;
-    mKneeMotorConfig.mI = intI * PID_POT_SENSITIVITY;
-    mKneeMotorConfig.mD = intD * PID_POT_SENSITIVITY;
-    mKneeMotorConfig.mPIDController.SetTunings(mKneeMotorConfig.mP, mKneeMotorConfig.mI, mKneeMotorConfig.mD);
 #if DEBUG_POT_BOX || DEBUG_KNEE_MOTOR || DEBUG_HIP_MOTOR
     delay(50);
-#endif
+#endif    
     
+    if (mPotBoxConnected)
+    {
+      int intP;
+      int intI;
+      int intD;
+      ProsthesisPotBox::GetPID(&intP, &intI, &intD);
+      mKneeMotorConfig.mP = intP * PID_POT_SENSITIVITY;
+      mKneeMotorConfig.mI = intI * PID_POT_SENSITIVITY;
+      mKneeMotorConfig.mD = intD * PID_POT_SENSITIVITY;
+      mKneeMotorConfig.mPIDController.SetTunings(mKneeMotorConfig.mP, mKneeMotorConfig.mI, mKneeMotorConfig.mD);
+      
 #if DEBUG_POT_BOX
-    Serial << "Read pot box " << intP << " " << intI << " " << intD << "\n";
-#endif
+      Serial << "Read pot box " << intP << " " << intI << " " << intD << "\n";
+#endif      
+    }
     
     if (mKneeMotorConfig.mActive)
     {
