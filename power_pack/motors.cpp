@@ -18,45 +18,11 @@ template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg);
 #define ANALOG_TO_VOLTAGE 0.004892494
 #define PRESSURE_SENSITIVITY 1386.2
 #define PRESSURE_INTERCEPT 1246.7
-#define PID_COMPUTE_PERIOD_MS 25
 
 #define ANALOG_READ_TO_PRESSURE(x) (((double)x * ANALOG_TO_VOLTAGE * PRESSURE_SENSITIVITY) - PRESSURE_INTERCEPT)
 
-typedef struct tMotorConfig {
-  tMotorConfig() : 
-  mThrottlePin(-1), 
-  mPressureInputPin(-1), 
-  mLoadInputPin(-1), 
-  mActive(false), 
-  mSampleAvg(0.0f),
-  mP(0.0f), 
-  mI(0.0f), 
-  mD(0.0f), 
-  mPressureSetpoint(1500),
-  mThrottle(0),
-  mPIDController(&mSampleAvg, &mThrottle, &mPressureSetpoint, 0, 0, 0, DIRECT)
-  {
-    mPIDController.SetMode(AUTOMATIC);
-    mPIDController.SetSampleTime(PID_COMPUTE_PERIOD_MS);
-  }
- 
-  uint8_t mThrottlePin;
-  uint8_t mPressureInputPin;
-  uint8_t mLoadInputPin;
-  double mSampleAvg;
-  float mP;
-  float mI;
-  float mD;
-  double mPressureSetpoint;
-  double mThrottle;
-  bool mActive;
-  
-  PID mPIDController;
-} tMotorConfig;
-
 namespace ProsthesisMotors
 {
- 
   tMotorConfig mKneeMotorConfig;
   tMotorConfig mHipMotorConfig;
   
@@ -160,4 +126,14 @@ namespace ProsthesisMotors
       }
     }
   } 
+  
+  const tMotorConfig *GetHipMotorConfig()
+  {
+    return &mHipMotorConfig;  
+  }
+  
+  const tMotorConfig *GetKneeMotorConfig()
+  {
+    return &mKneeMotorConfig;
+  }  
 }
