@@ -35,7 +35,7 @@ void setup()
   CommandProcessor::SetEnableToggleRequestCallback(InitializeDeviceCb);
   CommandProcessor::SetHeartbeatRequestCallback(HeartbeatEnableCb);
   
-  Serial.begin(9600);
+  Serial.begin(57600);
   
   //Initialize our device state
   mDeviceState.State = Uninitialized;

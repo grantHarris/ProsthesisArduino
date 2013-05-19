@@ -57,13 +57,15 @@ namespace ProsthesisMotors
   void ToggleKneeMotorControl(bool toggle)
   {
     mKneeMotorConfig.mActive = toggle;
-    analogWrite(mKneeMotorConfig.mThrottlePin, 0);
+    mKneeMotorConfig.mThrottle = 0;
+    analogWrite(mKneeMotorConfig.mThrottlePin, mKneeMotorConfig.mThrottle);
   }
   
   void ToggleHipMotorControl(bool toggle)
   {
     mHipMotorConfig.mActive = toggle;
-    analogWrite(mHipMotorConfig.mThrottlePin, 0);
+    mHipMotorConfig.mThrottle = 0;
+    analogWrite(mHipMotorConfig.mThrottlePin, mHipMotorConfig.mThrottle);
   }
  
   void UpdateMotors()
