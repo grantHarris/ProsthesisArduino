@@ -96,6 +96,11 @@ namespace ProsthesisMotors
       mKneeMotorConfig.mD = intD * PID_POT_SENSITIVITY;
       mKneeMotorConfig.mPIDController.SetTunings(mKneeMotorConfig.mP, mKneeMotorConfig.mI, mKneeMotorConfig.mD);
       
+      mHipMotorConfig.mP = mKneeMotorConfig.mP;
+      mHipMotorConfig.mI = mKneeMotorConfig.mI;
+      mHipMotorConfig.mD = mKneeMotorConfig.mD;
+      mHipMotorConfig.mPIDController.SetTunings(mHipMotorConfig.mP, mHipMotorConfig.mI, mHipMotorConfig.mD);      
+      
 #if DEBUG_POT_BOX
       Serial << "Read pot box " << intP << " " << intI << " " << intD << "\n";
 #endif      
