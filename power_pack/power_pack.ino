@@ -10,19 +10,11 @@
 #include "motors.h"
 #include "pins.h"
 
-#define DISPLAY_INPUT_PRESSURE 0x70 //This is the default address of the OpenSegment with both solder jumpers open
-#define DISPLAY_SETPOINT_PRESSURE 0x72
-#define CLEAR_DISPLAY 0x76 // Command to clear the 7seg display (sparkfun version)
-
 
 void TransitionToState(DeviceStates toState);
 void DeviceDisabledSlice();
 void DeviceActiveSlice();
 void DeviceFaultSlice();
-void DisplayState();
-void CleanDisplayConnections();
-void WriteValueToDisplay(int address, int value);
-
 
 aJsonStream mJSONSerialStream(&Serial);
 const char* kArduinoID = "mcon";
@@ -46,7 +38,6 @@ void setup()
   CommandProcessor::SetHeartbeatRequestCallback(HeartbeatEnableCb);
   
   Serial.begin(57600);
-  CleanDisplayConnections();
   
   //Initialize our device state
   mDeviceState.State = Uninitialized;
@@ -136,7 +127,6 @@ void loop()
     
     mLastTelem = millis(); 
   }
-  DisplayState();
   //Soft realtime heartbeat. It is up to the client to decide how many deadlines have passed before assuming the Arduino has gone rogue
   if (mHeartbeatEnabled && millis() - mLastHeartbeat > mHeartbeatPeriodMS)
   {
@@ -323,38 +313,4 @@ void DeviceFaultSlice()
   mLastMillis = millis();  
 }
 
-void DisplayState()
-{
-  #define ANALOG_TO_VOLTAGE 0.004892494
-  #define PRESSURE_SENSITIVITY 1386.2
-  #define PRESSURE_INTERCEPT 1246.7
-  
-  WriteValueToDisplay(DISPLAY_INPUT_PRESSURE, (int) (((double)(analogRead(A0)) * ANALOG_TO_VOLTAGE * PRESSURE_SENSITIVITY) - PRESSURE_INTERCEPT));
-  WriteValueToDisplay(DISPLAY_SETPOINT_PRESSURE, (int) mDeviceState.PressureSetPoint);
-}
 
-void CleanDisplayConnections()
-{
-  Wire.begin();
-  Wire.beginTransmission(DISPLAY_INPUT_PRESSURE);
-  Wire.write(CLEAR_DISPLAY);
-  Wire.endTransmission();
-  Wire.beginTransmission(DISPLAY_SETPOINT_PRESSURE);
-  Wire.write(CLEAR_DISPLAY);
-  Wire.endTransmission();
-}
-
-void WriteValueToDisplay(int address, int value)
-{
-  Wire.beginTransmission(address);
-  Wire.write(0x79);
-  Wire.write(0x00);
-  Wire.write(value/1000);
-  value %= 1000;
-  Wire.write(value/100);
-  value %= 100;
-  Wire.write(value/10);
-  value %= 10;
-  Wire.write(value);
-  Wire.endTransmission();
-}

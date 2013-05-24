@@ -17,4 +17,7 @@
 #define POT_BOX_INTERRUPT_ID 0
 #define POT_BOX_INTERRUPT_PIN 2
 
+#define SETPOINT_PLUS_PIN 25
+#define SETPOINT_MINUS_PIN 24
+
 #endif //_PINS_H__
