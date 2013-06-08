@@ -10,4 +10,7 @@ enum DeviceStates
   Fault = 2
 };
 
+typedef void (*tRockerPressedCallback)(int);
+typedef int (*dtGetDisplayValueCallback)(void);
+
 #endif //__DEVICE_STATES_H__

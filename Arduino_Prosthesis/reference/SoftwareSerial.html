@@ -131,6 +131,7 @@ a.varlink { text-decoration:none; }
 </p>
 <p class='vspace'></p><ul><li>If using multiple software serial ports, only one can receive data at a time. 
 </li><li>Not all pins on the Mega and Mega 2560 support change interrupts, so only the following can be used for RX: 10, 11, 12, 13,  50, 51, 52, 53,  62, 63, 64, 65, 66, 67, 68, 69
+</li><li>Not all pins on the Leonardo support change interrupts, so only the following can be used for RX: 8, 9, 10, 11, 14 (MISO), 15 (SCK), 16 (MOSI).
 </li></ul><p class='vspace'></p><h4>Example</h4>
 <div  class='code' >
 <p class='vspace'></p><p>
@@ -142,11 +143,20 @@ a.varlink { text-decoration:none; }
 &nbsp;Receives from software serial, sends to hardware serial.<br />
 &nbsp;<br />
 &nbsp;The circuit: <br />
-&nbsp;* RX is digital pin 2 (connect to TX of other device)<br />
-&nbsp;* TX is digital pin 3 (connect to RX of other device)<br />
+&nbsp;* RX is digital pin 10 (connect to TX of other device)<br />
+&nbsp;* TX is digital pin 11 (connect to RX of other device)<br />
+&nbsp;<br />
+&nbsp;Note:<br />
+&nbsp;Not all pins on the Mega and Mega 2560 support change interrupts, <br />
+&nbsp;so only the following can be used for RX: <br />
+&nbsp;10, 11, 12, 13, 50, 51, 52, 53, 62, 63, 64, 65, 66, 67, 68, 69<br />
+&nbsp;<br />
+&nbsp;Not all pins on the Leonardo support change interrupts, <br />
+&nbsp;so only the following can be used for RX: <br />
+&nbsp;8, 9, 10, 11, 14 (MISO), 15 (SCK), 16 (MOSI).<br />
 &nbsp;<br />
 &nbsp;created back in the mists of time<br />
-&nbsp;modified 9 Apr 2012<br />
+&nbsp;modified 25 May 2012<br />
 &nbsp;by Tom Igoe<br />
 &nbsp;based on Mikal Hart's example<br />
 &nbsp;<br />
@@ -155,17 +165,17 @@ a.varlink { text-decoration:none; }
 &nbsp;*/</span><br />
 <span class="co2">#include &lt;SoftwareSerial.h&gt;</span><br />
 <br />
-SoftwareSerial mySerial<span class="br0">&#40;</span><span class="nu0">2</span><span class="sy0">,</span> <span class="nu0">3</span><span class="br0">&#41;</span><span class="sy0">;</span> <span class="co1">// RX, TX</span><br />
+SoftwareSerial mySerial<span class="br0">&#40;</span><span class="nu0">10</span><span class="sy0">,</span> <span class="nu0">11</span><span class="br0">&#41;</span><span class="sy0">;</span> <span class="co1">// RX, TX</span><br />
 <br />
 <span class="kw1">void</span> <span class="kw3">setup</span><span class="br0">&#40;</span><span class="br0">&#41;</span> &nbsp;<br />
 <span class="br0">&#123;</span><br />
-&nbsp;<span class="co1">// Open serial communications and wait for port to open:</span><br />
+&nbsp; <span class="co1">// Open serial communications and wait for port to open:</span><br />
 &nbsp; <span class="kw1">Serial</span>.<span class="kw1">begin</span><span class="br0">&#40;</span><span class="nu0">57600</span><span class="br0">&#41;</span><span class="sy0">;</span><br />
-&nbsp; &nbsp;<span class="kw1">while</span> <span class="br0">&#40;</span><span class="sy0">!</span><span class="kw1">Serial</span><span class="br0">&#41;</span> <span class="br0">&#123;</span><br />
+&nbsp; <span class="kw1">while</span> <span class="br0">&#40;</span><span class="sy0">!</span><span class="kw1">Serial</span><span class="br0">&#41;</span> <span class="br0">&#123;</span><br />
 &nbsp; &nbsp; <span class="sy0">;</span> <span class="co1">// wait for serial port to connect. Needed for Leonardo only</span><br />
 &nbsp; <span class="br0">&#125;</span><br />
 <br />
-&nbsp; <br />
+<br />
 &nbsp; <span class="kw1">Serial</span>.<span class="kw1">println</span><span class="br0">&#40;</span><span class="st0">&quot;Goodnight moon!&quot;</span><span class="br0">&#41;</span><span class="sy0">;</span><br />
 <br />
 &nbsp; <span class="co1">// set the data rate for the SoftwareSerial port</span><br />

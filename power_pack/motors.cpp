@@ -138,8 +138,18 @@ namespace ProsthesisMotors
     return &mHipMotorConfig;  
   }
   
+  void ChangeHipMotorSetPoint(int amount)
+  {
+    mHipMotorConfig.mPressureSetpoint = constrain(amount + mHipMotorConfig.mPressureSetpoint, 0, 2500);
+  }
+  
   const tMotorConfig *GetKneeMotorConfig()
   {
     return &mKneeMotorConfig;
   }  
+  
+  void ChangeKneeMotorSetPoint(int amount)
+  {
+    mKneeMotorConfig.mPressureSetpoint = constrain(amount + mKneeMotorConfig.mPressureSetpoint, 0, 2500);
+  }
 }

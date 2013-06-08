@@ -74,13 +74,13 @@ a.varlink { text-decoration:none; }
 </p>
 <p class='vspace'></p><p>The <a class='wikilink' href='http://arduino.cc/en/Main/ArduinoBoardMega2560'>Arduino Mega</a> has three additional serial ports: <strong>Serial1</strong> on pins 19 (RX) and 18 (TX),  <strong>Serial2</strong> on pins 17 (RX) and 16 (TX), <strong>Serial3</strong> on pins 15 (RX) and 14 (TX).   To use these pins to communicate with your personal computer, you will need an additional USB-to-serial adaptor, as they are not connected to the Mega's USB-to-serial adaptor. To use them to communicate with an external TTL serial device, connect the TX pin to your device's RX pin, the RX to your device's TX pin, and the ground of your Mega to your device's ground.  (Don't connect these pins directly to an <span class='wikiword'>RS232</span> serial port; they operate at +/- 12V and can damage your Arduino board.)
 </p>
-<p class='vspace'></p><p>The Arduino Leonardo board uses <strong>Serial1</strong> to communicate via <span class='wikiword'>RS232</span> on pins 0 (RX) and 1 (TX). <strong>Serial</strong> is reserved for USB CDC communication through the <a class='wikilink' href='MouseKeyboard.html'>Mouse and Keyboard libraries</a>. For more information, refer to the Leonardo <a class='wikilink' href='Guide_ArduinoLeonardo.html'>getting started</a> page and <a class='wikilink' href='http://arduino.cc/en/Main/ArduinoBoardLeonardo'>hardware page</a>. 
+<p class='vspace'></p><p>The Arduino Leonardo board uses <strong>Serial1</strong> to communicate via <span class='wikiword'>RS232</span> on pins 0 (RX) and 1 (TX). <strong>Serial</strong> is reserved for USB CDC communication. For more information, refer to the Leonardo <a class='wikilink' href='Guide_ArduinoLeonardo.html'>getting started</a> page and <a class='wikilink' href='http://arduino.cc/en/Main/ArduinoBoardLeonardo'>hardware page</a>. 
 </p>
 <p class='vspace'></p></td><td  width='10%' valign='top'>
 <p class='vspace'></p></td><td  width='35%' valign='top'>
 <p class='vspace'></p><h4>Functions</h4>
 <ul><li><a class='wikilink' href='Serial_IfSerial.html'>if (Serial)</a>
-</li><li><a class='wikilink' href='Serial_Available.html'>available</a>()
+<p class='vspace'></p></li><li><a class='wikilink' href='Serial_Available.html'>available</a>()
 </li><li><a class='wikilink' href='Serial_Begin.html'>begin</a>()
 </li><li><a class='wikilink' href='Serial_End.html'>end</a>()
 </li><li><a class='wikilink' href='Serial_Find.html'>find</a>()
@@ -96,7 +96,7 @@ a.varlink { text-decoration:none; }
 </li><li><a class='wikilink' href='Serial_ReadBytesUntil.html'>readBytesUntil</a>()
 </li><li><a class='wikilink' href='Serial_SetTimeout.html'>setTimeout</a>()
 </li><li><a class='wikilink' href='Serial_Write.html'>write</a>()
-</li><li><a class='wikilink' href='SerialEvent.html'>SerialEvent</a>()
+<p class='vspace'></p></li><li><a class='wikilink' href='SerialEvent.html'>serialEvent</a>()
 </li></ul><p class='vspace'></p><h4>Examples</h4>
 <ul><li><a class='wikilink' href='http://arduino.cc/en/Tutorial/ReadASCIIString'>ReadASCIIString</a>
 </li><li><a class='wikilink' href='http://arduino.cc/en/Tutorial/ASCIITable'>ASCII Table</a>

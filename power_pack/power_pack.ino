@@ -2,12 +2,16 @@
 #include <PID_v1.h>
 #include <pot_box.h>
 #include <aJSON.h>
+#include <Wire.h>
 #include <command_processor.h>
 
 #include "motor_state.h"
 #include "DeviceState.h"
+#include "eng_iface.h"
 #include "motors.h"
 #include "pins.h"
+
+template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
 
 void TransitionToState(DeviceStates toState);
 void DeviceDisabledSlice();
@@ -29,7 +33,7 @@ bool mHeartbeatEnabled = false;
 MotorState::tMotorControllerState mDeviceState;
 
 void setup()
-{
+{ 
   CommandProcessor::SetTypeIDRequestCallback(IDRequestCallback);
   CommandProcessor::SetTelemetryRequestCallback(TelemetryEnableCb);
   CommandProcessor::SetEnableToggleRequestCallback(InitializeDeviceCb);
@@ -55,10 +59,24 @@ void setup()
   
   ProsthesisMotors::ToggleKneeMotorControl(false);
   ProsthesisMotors::ToggleHipMotorControl(false);
+ 
+  ProsthesisEngineeringInterface::InitializeInterface(DISPLAY_HIP_PRESSURE_ADDRESS, MOTOR_HIP_SET_POINT_UP_PIN, MOTOR_HIP_SET_POINT_DOWN_PIN, DISPLAY_KNEE_PRESSURE_ADDRESS, MOTOR_KNEE_SET_POINT_UP_PIN, MOTOR_KNEE_SET_POINT_DOWN_PIN);
+  ProsthesisEngineeringInterface::SetRockerTickAmount(50);
+  
+  ProsthesisEngineeringInterface::SetLeftDisplayDataCallback(GetHipPressureSetPoint);
+  ProsthesisEngineeringInterface::SetLeftDisplayRockerUpCallback(HipRockerDown);
+  ProsthesisEngineeringInterface::SetLeftDisplayRockerDownCallback(HipRockerDown);
+  
+  ProsthesisEngineeringInterface::SetRightDisplayDataCallback(GetKneePressureSetPoint);
+  ProsthesisEngineeringInterface::SetRightDisplayRockerUpCallback(KneeRockerDown);
+  ProsthesisEngineeringInterface::SetRightDisplayRockerDownCallback(KneeRockerDown);
 }
 
 void loop()
-{
+{  
+   //Send updates to engineering interface as often as possible.
+   ProsthesisEngineeringInterface::Update();
+   
    if (mJSONSerialStream.available()) 
    {
      // First, skip any accidental whitespace like newlines.
@@ -309,4 +327,24 @@ void DeviceActiveSlice()
 void DeviceFaultSlice()
 {
   mLastMillis = millis();  
+}
+
+int GetHipPressureSetPoint()
+{
+  return ProsthesisMotors::GetHipMotorConfig()->mPressureSetpoint;
+}
+
+int GetKneePressureSetPoint()
+{
+  return ProsthesisMotors::GetHipMotorConfig()->mPressureSetpoint;
+}
+
+void HipRockerDown(int amount)
+{
+  ProsthesisMotors::ChangeHipMotorSetPoint(amount);
+}
+
+void KneeRockerDown(int amount)
+{
+  ProsthesisMotors::ChangeKneeMotorSetPoint(amount);
 }

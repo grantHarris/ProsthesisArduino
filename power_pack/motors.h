@@ -51,7 +51,9 @@ namespace ProsthesisMotors
   void UpdateMotors();
   
   const tMotorConfig *GetHipMotorConfig();
+  void ChangeHipMotorSetPoint(int amount);
   const tMotorConfig *GetKneeMotorConfig();
+  void ChangeKneeMotorSetPoint(int amount);
 }
 
 #endif //__PROSTHESIS_MOTORS_H__
