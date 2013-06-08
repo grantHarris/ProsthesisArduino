@@ -77,3 +77,4 @@ aJsonObject *MotorState::MotorStateToJSON(tMotorControllerState state)
   
   return msg; 
 }
+

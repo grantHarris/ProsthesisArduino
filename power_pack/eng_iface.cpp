@@ -4,14 +4,19 @@
 
 #define CLEAR_DISPLAY 0x76 // Command to clear the 7seg display (sparkfun version)
 
-int mDisplayUpdatePeriod = 1000;
+int mDisplayUpdatePeriodMS = 250;
 int mRockerTickAmount = 50;
 int mLastDisplayUpdateMS = 0;
+
+bool mInitialized = false;
 
 typedef struct tDisplayControl{
   int mDisplayAddress;
   int mRockerUpPin;
   int mRockerDownPin;
+  
+  int mLastRockerChangeAtMs;
+  int mRockerValue;
   
   tRockerPressedCallback mRockerUpCb;
   tRockerPressedCallback mRockerDownCb;
@@ -25,13 +30,56 @@ typedef struct tDisplayControl{
   mRockerDownPin(rockerDownPin),
   mRockerUpCb(NULL),
   mRockerDownCb(NULL),
-  mDisplayDataCb(NULL)
+  mDisplayDataCb(NULL),
+  mLastRockerChangeAtMs(0),
+  mRockerValue(0)
   {
     pinMode(mRockerUpPin, INPUT);
     pinMode(mRockerDownPin, INPUT);       
   }
   
   tDisplayControl(){}
+  
+  bool DebounceCheck(int pin)
+  {
+    bool val = digitalRead(pin);
+   
+    for (int i = 0; i < 10 && val; ++i)
+    {
+     val &= digitalRead(pin); 
+    }
+    
+    return val;
+  }
+  
+  void DoRockers(int rockerAmount)
+  {
+    int newRockerState = 0;
+    
+    if (DebounceCheck(mRockerUpPin))
+    {
+      newRockerState++; 
+    }
+    
+    if (DebounceCheck(mRockerDownPin))
+    {
+      newRockerState--;
+    }
+    
+    if (newRockerState != mRockerValue)
+    {
+      mRockerValue = newRockerState; 
+      
+      if (mRockerValue > 0 && mRockerUpCb != NULL)
+      {
+        mRockerUpCb(rockerAmount * mRockerValue);
+      }
+      else if (mRockerValue < 0 && mRockerDownCb != NULL)
+      {
+        mRockerDownCb(rockerAmount * mRockerValue);
+      }
+    }
+  }
 } tDisplayControl;
 
 tDisplayControl mLeftDisplay;
@@ -68,6 +116,7 @@ namespace ProsthesisEngineeringInterface
     Wire.endTransmission();    
     
     mLastDisplayUpdateMS = millis();  
+    mInitialized = true;
   }
 
   void SetRockerTickAmount(int amount)
@@ -77,17 +126,20 @@ namespace ProsthesisEngineeringInterface
   
   void SetDisplayUpdateRefreshPeriodMS(int timeMS)
   {
-    mDisplayUpdatePeriod = timeMS;
+    mDisplayUpdatePeriodMS = timeMS;
   }  
-  
-  int mLastLeftRocker = 0;
-  int mLastRightRocker = 0;
   
   void Update()
   { 
+    if (!mInitialized)
+    {
+      return; 
+    }
     //TODO: Read rocker pin inputs
+    mLeftDisplay.DoRockers(mRockerTickAmount);
+    mRightDisplay.DoRockers(mRockerTickAmount);
     
-    if (millis() - mLastDisplayUpdateMS > mLastDisplayUpdateMS)
+    if (millis() - mLastDisplayUpdateMS > mDisplayUpdatePeriodMS)
     {
       int left = 0;
       int right = 0;
@@ -137,4 +189,5 @@ namespace ProsthesisEngineeringInterface
     mRightDisplay.mRockerDownCb = cb;
   }
 }
+
 

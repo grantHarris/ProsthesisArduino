@@ -18,6 +18,9 @@ template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg);
 #define PRESSURE_SENSITIVITY 1386.2
 #define PRESSURE_INTERCEPT 1246.7
 
+#define SAFE_MAX_PRESSURE_PSI 2500
+#define SAFE_MIN_PRESSURE_PSI 0
+
 #define ANALOG_READ_TO_PRESSURE(x) (((double)x * ANALOG_TO_VOLTAGE * PRESSURE_SENSITIVITY) - PRESSURE_INTERCEPT)
 
 namespace ProsthesisMotors
@@ -140,7 +143,7 @@ namespace ProsthesisMotors
   
   void ChangeHipMotorSetPoint(int amount)
   {
-    mHipMotorConfig.mPressureSetpoint = constrain(amount + mHipMotorConfig.mPressureSetpoint, 0, 2500);
+    mHipMotorConfig.mPressureSetpoint = constrain(amount + mHipMotorConfig.mPressureSetpoint, SAFE_MIN_PRESSURE_PSI, SAFE_MAX_PRESSURE_PSI);
   }
   
   const tMotorConfig *GetKneeMotorConfig()
@@ -150,6 +153,7 @@ namespace ProsthesisMotors
   
   void ChangeKneeMotorSetPoint(int amount)
   {
-    mKneeMotorConfig.mPressureSetpoint = constrain(amount + mKneeMotorConfig.mPressureSetpoint, 0, 2500);
+    mKneeMotorConfig.mPressureSetpoint = constrain(amount + mKneeMotorConfig.mPressureSetpoint, SAFE_MIN_PRESSURE_PSI, SAFE_MAX_PRESSURE_PSI);
   }
 }
+

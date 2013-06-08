@@ -336,7 +336,7 @@ int GetHipPressureSetPoint()
 
 int GetKneePressureSetPoint()
 {
-  return ProsthesisMotors::GetHipMotorConfig()->mPressureSetpoint;
+  return ProsthesisMotors::GetKneeMotorConfig()->mPressureSetpoint;
 }
 
 void HipRockerDown(int amount)
@@ -348,3 +348,4 @@ void KneeRockerDown(int amount)
 {
   ProsthesisMotors::ChangeKneeMotorSetPoint(amount);
 }
+
