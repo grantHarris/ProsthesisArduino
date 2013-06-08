@@ -37,7 +37,7 @@ readBytesBetween( pre_string, terminator, buffer, length)
 
 class Stream : public Print
 {
-  protected:
+  private:
     unsigned long _timeout;      // number of milliseconds to wait for the next char before aborting timed read
     unsigned long _startMillis;  // used for timeout measurement
     int timedRead();    // private method to read stream with timeout

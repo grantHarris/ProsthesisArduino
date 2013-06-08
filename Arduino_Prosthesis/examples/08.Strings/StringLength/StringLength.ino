@@ -23,7 +23,7 @@ void setup() {
 
   // send an intro:
   Serial.println("\n\nString  length():");
-  Serial.println();
+  Serial.ptintln();
 }
 
 void loop() {

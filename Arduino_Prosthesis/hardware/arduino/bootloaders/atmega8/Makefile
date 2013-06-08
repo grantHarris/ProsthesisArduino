@@ -26,7 +26,7 @@ ISPFLASH   = $(DIRAVRBIN)/uisp -dpart=ATmega8 $(ISPPARAMS) --erase --upload if=$
 
 
 OBJ        = $(PROGRAM).o
-OPTIMIZE   = -Os -funsigned-char -funsigned-bitfields -fno-inline-small-functions
+OPTIMIZE   = -Os
 
 DEFS       = -DF_CPU=16000000 -DBAUD_RATE=19200
 LIBS       =

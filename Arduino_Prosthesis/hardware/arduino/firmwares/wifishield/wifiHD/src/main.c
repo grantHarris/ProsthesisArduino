@@ -39,7 +39,7 @@
 #include <lwip_setup.h>
 
 /* FIRMWARE version */
-const char* fwVersion = "1.1.0";
+const char* fwVersion = "1.0.0";
 
 #if BOARD == ARDUINO
 #if !defined(DATAFLASH)
@@ -78,13 +78,25 @@ void fw_download_cb(void* ctx, uint8_t** buf, uint32_t* len)
 #endif
 #endif
 
+struct ctx_server {
+	struct net_cfg net_cfg;
+	uint8_t wl_init_complete;
+};
+
 bool ifStatus = false;
 bool scanNetCompleted = false;
 
 static bool initSpiComplete = false;
 
 // variable used as enable flag for debug prints
-DEFINE_DEBUG_VARIABLES();
+#ifdef _DEBUG_
+uint16_t enableDebug = DEFAULT_INFO_FLAG | INFO_WARN_FLAG;// | INFO_SPI_FLAG;
+uint16_t verboseDebug = 0;
+#else
+uint16_t enableDebug = DEFAULT_INFO_FLAG;
+uint16_t verboseDebug = 0;
+#endif
+
 
 /**
  *
@@ -109,7 +121,7 @@ wl_cm_conn_cb(struct wl_network_t* net, void* ctx)
 	INFO_INIT("Connection cb...\n");
 
 	printk("link up, connected to \"%s\"\n", ssid2str(&net->ssid));
-    if ( hs->net_cfg.dhcp_enabled == DYNAMIC_IP_CONFIG ) {
+    if ( hs->net_cfg.dhcp_enabled ) {
 			INFO_INIT("Start DHCP...\n");
 		    printk("requesting dhcp ... ");
             int8_t result = dhcp_start(hs->net_cfg.netif);
@@ -117,7 +129,7 @@ wl_cm_conn_cb(struct wl_network_t* net, void* ctx)
             hs->net_cfg.dhcp_running = 1;
     }
     else {
-        netif_set_up(hs->net_cfg.netif);
+            netif_set_up(hs->net_cfg.netif);
     }
 
     INFO_INIT("Start DNS...\n");
@@ -265,7 +277,7 @@ poll(struct ctx_server* hs)
 #endif
 }
 
-void initShell(void* ctx)
+void initShell()
 {
 	/* initialize shell */
 	INFO_INIT("Shell init...\n");
@@ -273,10 +285,9 @@ void initShell(void* ctx)
         console_add_cmd("scan", cmd_scan, NULL);
         console_add_cmd("connect", cmd_connect, NULL);
         console_add_cmd("setkey", cmd_setkey, NULL);
-        console_add_cmd("status", cmd_status, ctx);
+        console_add_cmd("status", cmd_status, NULL);
         console_add_cmd("debug", cmd_debug, NULL);
-        console_add_cmd("dumpBuf", cmd_dumpBuf, NULL);
-		console_add_cmd("ipconfig", cmd_set_ip, ctx);
+
 #ifdef ADD_CMDS
         console_add_cmd("powersave", cmd_power, NULL);
         console_add_cmd("psconf", cmd_psconf, NULL);
@@ -296,11 +307,8 @@ void initShell(void* ctx)
 #ifdef _DNS_CMD_
         console_add_cmd("getHost", cmd_gethostbyname, NULL);
         console_add_cmd("setDNS", cmd_setDnsServer, NULL);
+        console_add_cmd("startTcpSrv", cmd_startTcpSrv, NULL);
 #endif
-        console_add_cmd("startSrv", cmd_startSrv, NULL);
-        console_add_cmd("startCli", cmd_startCli, NULL);
-        console_add_cmd("sendUdp", cmd_sendUdpData, NULL);
-
 }
 
 /**
@@ -313,16 +321,12 @@ wl_init_complete_cb(void* ctx)
     struct ip_addr ipaddr, netmask, gw;
 	wl_err_t wl_status;
 	
-	if (hs->net_cfg.dhcp_enabled == INIT_IP_CONFIG)
-	{
-		IP4_ADDR(&gw, 0,0,0,0);
-		IP4_ADDR(&ipaddr, 0,0,0,0);
-		IP4_ADDR(&netmask, 0,0,0,0);
-			
-		/* default is dhcp enabled */
-		hs->net_cfg.dhcp_enabled = DYNAMIC_IP_CONFIG;
-	}
-
+	IP4_ADDR(&gw, 0,0,0,0);
+    IP4_ADDR(&ipaddr, 0,0,0,0);
+    IP4_ADDR(&netmask, 0,0,0,0);
+        
+    /* default is dhcp enabled */
+    hs->net_cfg.dhcp_enabled = 1;
     start_ip_stack(&hs->net_cfg,
                    ipaddr,
                    netmask,
@@ -337,7 +341,7 @@ wl_init_complete_cb(void* ctx)
 
     wl_scan();
 
-    if (initSpi(hs)){
+    if (initSpi()){
     	WARN("Spi not initialized\n");
     }else
     {
@@ -355,12 +359,8 @@ void startup_init(void)
 
 	// if DEBUG enabled use DEB_PIN_GPIO for debug purposes
     DEB_PIN_ENA();
-	DEB_PIN_ENA(2);
     DEB_PIN_UP();
-	DEB_PIN_UP(2);
 }
-
-const char timestamp[] = __TIMESTAMP__;
 
 /**
  *
@@ -381,6 +381,8 @@ main(void)
 
     tc_init();
 
+    initShell();
+
     delay_init(FOSC0);
 
 #ifdef _TEST_SPI_
@@ -394,7 +396,7 @@ main(void)
 
      }
 #else
-    printk("Arduino Wifi Startup... [%s]\n", timestamp);
+    printk("Arduino Wifi Startup... [%s]\n", __TIMESTAMP__);
 
     size_t size_ctx_server = sizeof(struct ctx_server);
 	hs = calloc(1, size_ctx_server);
@@ -403,11 +405,10 @@ main(void)
 	size_t size_netif = sizeof(struct netif);
 	hs->net_cfg.netif = calloc(1, size_netif);
 	ASSERT(hs->net_cfg.netif, "out of memory");
-	hs->net_cfg.dhcp_enabled = INIT_IP_CONFIG;
 
 	INFO_INIT("hs:%p size:0x%x netif:%p size:0x%x\n", hs, size_ctx_server,
 			hs->net_cfg.netif, size_netif);
-    initShell(hs);
+
 	timer_init(NULL, NULL);
     lwip_init();
         

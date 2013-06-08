@@ -46,7 +46,6 @@
 
 #include "compiler.h"
 #include "debug.h"
-#include "util.h"
 
 
 #if (defined __GNUC__)
@@ -118,16 +117,3 @@ void uc3_round_trace(U32 val)
 
   //Enable_global_interrupt();
 }
-
-void dump(char* _buf, uint16_t _count) {
-
-	int i;
-	for (i = 0; i < _count; ++i)
-	{
-		printk("0x%x ", _buf[i]);
-		if ((i!=0)&&(i % 10 == 0))
-			printk("\n\t");
-	}
-	printk("\n");
-}
-

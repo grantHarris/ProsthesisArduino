@@ -10,10 +10,9 @@
  three 10 kilohm resistors
  3 220 ohm resistors
  3 photoresistors
- red green and blue colored gels
+ red green aand blue colored gels
  
  Created 13 September 2012
- Modified 14 November 2012
  by Scott Fitzgerald
  Thanks to Federico Vanzati for improvements
 
@@ -43,32 +42,32 @@ void setup() {
   Serial.begin(9600); 
 
   // set the digital pins as outputs
-  pinMode(greenLEDPin,OUTPUT);
-  pinMode(redLEDPin,OUTPUT);
-  pinMode(blueLEDPin,OUTPUT);
+  pinMode(greenLedPin,OUTPUT);
+  pinMode(redLedPin,OUTPUT);
+  pinMode(blueLedPin,OUTPUT);
 }
 
 void loop() {
   // Read the sensors first:
   
   // read the value from the red-filtered photoresistor:
-  redSensorValue = analogRead(redSensorPin);
+  redsensorValue = analogRead(redsensorPin);
   // give the ADC a moment to settle
   delay(5);
   // read the value from the green-filtered photoresistor:
-  greenSensorValue = analogRead(greenSensorPin);
+  greensensorValue = analogRead(greensensorPin);
   // give the ADC a moment to settle
   delay(5);
   // read the value from the blue-filtered photoresistor:
-  blueSensorValue = analogRead(blueSensorPin);  
+  bluesensorValue = analogRead(bluesensorPin);  
 
   // print out the values to the serial monitor  
   Serial.print("raw sensor Values \t red: ");
-  Serial.print(redSensorValue);
+  Serial.print(redsensorValue);
   Serial.print("\t green: ");
-  Serial.print(greenSensorValue);
+  Serial.print(greensensorValue);
   Serial.print("\t Blue: ");
-  Serial.println(blueSensorValue);
+  Serial.println(bluesensorValue);
 
   /*
   In order to use the values from the sensor for the LED, 
@@ -76,9 +75,9 @@ void loop() {
   but analogWrite() uses 8 bits. You'll want to divide your 
   sensor readings by 4 to keep them in range of the output. 
   */
-  redValue = redSensorValue/4;
-  greenValue = greenSensorValue/4;
-  blueValue = blueSensorValue/4;  
+  redValue = redsensorValue/4;
+  greenValue = greensensorValue/4;
+  blueValue = bluesensorValue/4;  
 
   //  print out the mapped values  
   Serial.print("Mapped sensor Values \t red: ");
@@ -91,8 +90,8 @@ void loop() {
   /*
   Now that you have a usable value, it's time to PWM the LED.
   */
-  analogWrite(redLEDPin, redValue);
-  analogWrite(greenLEDPin, greenValue);
-  analogWrite(blueLEDPin, blueValue);
+  analogWrite(redLedPin, redValue);
+  analogWrite(greenLedPin, greenValue);
+  analogWrite(blueLedPin, blueValue);
 }
 
