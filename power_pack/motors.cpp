@@ -15,8 +15,8 @@ template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg);
 //Constant terms
 #define PID_POT_SENSITIVITY 0.02
 #define ANALOG_TO_VOLTAGE 0.004894045
-#define PRESSURE_SENSITIVITY 1386.2
-#define PRESSURE_INTERCEPT 1246.7
+#define PRESSURE_SENSITIVITY 1338.104717
+#define PRESSURE_INTERCEPT 1246.725105
 
 #define SAFE_MAX_PRESSURE_PSI 2500
 #define SAFE_MIN_PRESSURE_PSI 0
