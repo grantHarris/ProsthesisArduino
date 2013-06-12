@@ -5,6 +5,8 @@
 #include <Wire.h>
 #include <command_processor.h>
 
+#define AUTONOMOUS_OPERATION 1
+
 #include "motor_state.h"
 #include "DeviceState.h"
 #include "eng_iface.h"
@@ -70,6 +72,10 @@ void setup()
   ProsthesisEngineeringInterface::SetRightDisplayDataCallback(GetKneePressureSetPoint);
   ProsthesisEngineeringInterface::SetRightDisplayRockerUpCallback(KneeRockerDown);
   ProsthesisEngineeringInterface::SetRightDisplayRockerDownCallback(KneeRockerDown);
+  
+#if AUTONOMOUS_OPERATION
+  TransitionToState(Active);
+#endif
 }
 
 void loop()
