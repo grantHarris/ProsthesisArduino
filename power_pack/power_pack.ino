@@ -128,11 +128,11 @@ void loop()
     mDeviceState.DTuning[HIP_MOTOR_INDEX] = hipConfig->mD;    
 #endif
     
-    //Assumption, only one set point for the whole system?
-    mDeviceState.PressureSetPoint = hipConfig->mPressureSetpoint;
+    mDeviceState.PressureSetPoints[HIP_MOTOR_INDEX] = hipConfig->mPressureSetpoint;
     
     mDeviceState.MotorDutyCycle[KNEE_MOTOR_INDEX] = kneeConfig->mThrottle / 255.0f;
     mDeviceState.OutputPressure[KNEE_MOTOR_INDEX] = kneeConfig->mSampleAvg;
+    mDeviceState.PressureSetPoints[KNEE_MOTOR_INDEX] = kneeConfig->mPressureSetpoint;
     
 #if OUTPUT_PID_TUNINGS
     mDeviceState.PTuning[KNEE_MOTOR_INDEX] = kneeConfig->mP;

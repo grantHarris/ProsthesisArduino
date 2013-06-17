@@ -34,7 +34,8 @@ aJsonObject *MotorState::MotorStateToJSON(tMotorControllerState state)
   aJsonObject *motorOutputPressures = aJson.createArray();  
   aJsonObject *motorLoadPressures = aJson.createArray();  
   aJsonObject *motorFlowRates = aJson.createArray();    
-  aJsonObject *motorDutyCycles = aJson.createArray();    
+  aJsonObject *motorDutyCycles = aJson.createArray();  
+  aJsonObject *motorSetPoints = aJson.createArray();  
   
 #if OUTPUT_PID_TUNINGS
   aJsonObject *motorPTunings = aJson.createArray();    
@@ -50,6 +51,7 @@ aJsonObject *MotorState::MotorStateToJSON(tMotorControllerState state)
     aJson.addItemToArray(motorLoadPressures, aJson.createItem((int)state.LoadPressure[i]));
     aJson.addItemToArray(motorFlowRates, aJson.createItem((int)state.FlowRate[i]));            
     aJson.addItemToArray(motorDutyCycles, aJson.createItem((int)(state.MotorDutyCycle[i] * 100.0f)));     
+    aJson.addItemToArray(motorSetPoints, aJson.createItem((int)state.PressureSetPoints[i]));
 
 #if OUTPUT_PID_TUNINGS
     aJson.addItemToArray(motorPTunings, aJson.createItem(state.PTuning[i])); 
@@ -60,7 +62,7 @@ aJsonObject *MotorState::MotorStateToJSON(tMotorControllerState state)
   
   aJson.addItemToObject(msg, MotorState::MotorStateKeys::kUsingLoadSenseKey, aJson.createItem(state.IsLoadSense));
   aJson.addItemToObject(msg, MotorState::MotorStateKeys::kDeviceStateKey, aJson.createItem(state.State));  
-  aJson.addItemToObject(msg, MotorState::MotorStateKeys::kPressureSetPoint, aJson.createItem((int)state.PressureSetPoint));  
+  aJson.addItemToObject(msg, MotorState::MotorStateKeys::kPressureSetPoint, motorSetPoints);  
   
   aJson.addItemToObject(msg, MotorState::MotorStateKeys::kCurrentArray, motorCurrents);
   aJson.addItemToObject(msg, MotorState::MotorStateKeys::kMotorVoltageArray, motorVoltages);

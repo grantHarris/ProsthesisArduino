@@ -19,7 +19,7 @@ namespace MotorState
     float FlowRate[NUM_MOTOR_CONTROLLERS];
     bool IsLoadSense;
     float MotorDutyCycle[NUM_MOTOR_CONTROLLERS];
-    float PressureSetPoint;
+    float PressureSetPoints[NUM_MOTOR_CONTROLLERS];
 #if OUTPUT_PID_TUNINGS
     float PTuning[NUM_MOTOR_CONTROLLERS];
     float ITuning[NUM_MOTOR_CONTROLLERS];
