@@ -95,12 +95,14 @@ namespace ProsthesisMotors
       int intD;
       ProsthesisPotBox::GetPID(&intP, &intI, &intD);
       mKneeMotorConfig.mP = intP * PID_POT_SENSITIVITY;
-      mKneeMotorConfig.mI = intI * PID_POT_SENSITIVITY;
+      //GOTODO: Fix Integral parameter      
+      mKneeMotorConfig.mI = 0;//intI * PID_POT_SENSITIVITY;
       mKneeMotorConfig.mD = intD * PID_POT_SENSITIVITY;
       mKneeMotorConfig.mPIDController.SetTunings(mKneeMotorConfig.mP, mKneeMotorConfig.mI, mKneeMotorConfig.mD);
       
       mHipMotorConfig.mP = mKneeMotorConfig.mP;
-      mHipMotorConfig.mI = mKneeMotorConfig.mI;
+      //GOTODO: Fix Integral parameter
+      mHipMotorConfig.mI = 0;//mKneeMotorConfig.mI;
       mHipMotorConfig.mD = mKneeMotorConfig.mD;
       mHipMotorConfig.mPIDController.SetTunings(mHipMotorConfig.mP, mHipMotorConfig.mI, mHipMotorConfig.mD);      
       
