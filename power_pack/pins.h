@@ -4,7 +4,7 @@
 #define DEVICE_ACTIVE_PIN 13
 
 #define DISPLAY_HIP_PRESSURE_ADDRESS 0x70 //This is the default address of the OpenSegment with both solder jumpers open
-#define DISPLAY_KNEE_PRESSURE_ADDRESS 0x72
+#define DISPLAY_KNEE_PRESSURE_ADDRESS 0x71
 
 #define MOTOR_KNEE_THROTTLE_PIN 12
 #define MOTOR_KNEE_PRESSURE_IN A3
@@ -13,7 +13,7 @@
 #define MOTOR_KNEE_SET_POINT_DOWN_PIN 6
 #define MOTOR_KNEE_SET_POINT_UP_PIN 4
 
-#define MOTOR_HIP_THROTTLE_PIN 11
+#define MOTOR_HIP_THROTTLE_PIN 10 //Pin 11 is damaged. do not use!!
 #define MOTOR_HIP_PRESSURE_IN A4
 #define MOTOR_HIP_LOAD_IN A6
 
