@@ -121,6 +121,7 @@ void loop()
     
     mDeviceState.MotorDutyCycle[HIP_MOTOR_INDEX] = hipConfig->mThrottle / 255.0f;
     mDeviceState.OutputPressure[HIP_MOTOR_INDEX] = hipConfig->mSampleAvg;
+    mDeviceState.PressureSetPoints[HIP_MOTOR_INDEX] = hipConfig->mPressureSetpoint;
     
 #if OUTPUT_PID_TUNINGS
     mDeviceState.PTuning[HIP_MOTOR_INDEX] = hipConfig->mP;

@@ -7,10 +7,16 @@
 #define HIP_MOTOR_INDEX 0
 #define KNEE_MOTOR_INDEX 1
 
+#define ANALOG_TO_VOLTAGE 0.004894045
+#define PRESSURE_SENSITIVITY 1338.104717
+#define PRESSURE_INTERCEPT 1246.725105
+
+#define ANALOG_READ_TO_PRESSURE(x) (((double)x * ANALOG_TO_VOLTAGE * PRESSURE_SENSITIVITY) - PRESSURE_INTERCEPT)
+
 namespace ProsthesisMotors
 {
   typedef struct tMotorConfig {
-    tMotorConfig() : 
+    tMotorConfig(int minThrottle) : 
     mThrottlePin(-1), 
     mPressureInputPin(-1), 
     mLoadInputPin(-1), 
@@ -21,7 +27,8 @@ namespace ProsthesisMotors
     mD(0.0f), 
     mPressureSetpoint(1500),
     mThrottle(0),
-    mPIDController(&mSampleAvg, &mThrottle, &mPressureSetpoint, 0, 0, 0, DIRECT)
+    mPIDController(&mSampleAvg, &mThrottle, &mPressureSetpoint, 0, 0, 0, DIRECT),
+    mMinThrottle(minThrottle)
     {
       mPIDController.SetMode(AUTOMATIC);
       mPIDController.SetSampleTime(PID_COMPUTE_PERIOD_MS);
@@ -37,8 +44,23 @@ namespace ProsthesisMotors
     double mPressureSetpoint;
     double mThrottle;
     bool mActive;
+    int mMinThrottle;
     
     PID mPIDController;
+    
+    void Update()
+    {
+      if (mActive)
+      {
+        //Use exponential averaging from http://bleaklow.com/2012/06/20/sensor_smoothing_and_optimised_maths_on_the_arduino.html
+        mSampleAvg = 0.1 * ANALOG_READ_TO_PRESSURE(analogRead(mPressureInputPin)) + 0.9 * mSampleAvg;
+        if (mPIDController.Compute())
+        {
+          mThrottle = mThrottle > mMinThrottle ? mThrottle : 0;
+          analogWrite(mThrottlePin, mThrottle);
+        }
+      }    
+    }
   } tMotorConfig;  
   
   void Initialize();

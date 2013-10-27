@@ -14,19 +14,16 @@ template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg);
 
 //Constant terms
 #define PID_POT_SENSITIVITY 0.02
-#define ANALOG_TO_VOLTAGE 0.004894045
-#define PRESSURE_SENSITIVITY 1338.104717
-#define PRESSURE_INTERCEPT 1246.725105
 
 #define SAFE_MAX_PRESSURE_PSI 2500
 #define SAFE_MIN_PRESSURE_PSI 0
 
-#define ANALOG_READ_TO_PRESSURE(x) (((double)x * ANALOG_TO_VOLTAGE * PRESSURE_SENSITIVITY) - PRESSURE_INTERCEPT)
+const float kMinThrottle = 0.02 * 255;
 
 namespace ProsthesisMotors
 {
-  tMotorConfig mKneeMotorConfig;
-  tMotorConfig mHipMotorConfig;
+  tMotorConfig mKneeMotorConfig(kMinThrottle);
+  tMotorConfig mHipMotorConfig(kMinThrottle);
   
   int mPotBoxConnected = false;
   int mPotBoxConnectionDirty = false;
@@ -111,31 +108,17 @@ namespace ProsthesisMotors
 #endif      
     }
     
-    if (mKneeMotorConfig.mActive)
-    {
-      //Use exponential averaging from http://bleaklow.com/2012/06/20/sensor_smoothing_and_optimised_maths_on_the_arduino.html
-      mKneeMotorConfig.mSampleAvg = 0.1 * ANALOG_READ_TO_PRESSURE(analogRead(mKneeMotorConfig.mPressureInputPin)) + 0.9 * mKneeMotorConfig.mSampleAvg;
-      if (mKneeMotorConfig.mPIDController.Compute())
-      {
-#if DEBUG_KNEE_MOTOR
-          Serial << "K: T: " << (int)mKneeMotorConfig.mThrottle << ". P: " << mKneeMotorConfig.mSampleAvg << " PID: " << mKneeMotorConfig.mP << ", " << mKneeMotorConfig.mI << ", " << mKneeMotorConfig.mD << "\n";
-#endif
-        analogWrite(mKneeMotorConfig.mThrottlePin, mKneeMotorConfig.mThrottle);
-      }
-    }
+    mKneeMotorConfig.Update();
     
-    if (mHipMotorConfig.mActive)
-    {
-      //Use exponential averaging from http://bleaklow.com/2012/06/20/sensor_smoothing_and_optimised_maths_on_the_arduino.html
-      mHipMotorConfig.mSampleAvg = 0.1 * ANALOG_READ_TO_PRESSURE(analogRead(mHipMotorConfig.mPressureInputPin)) + 0.9 * mHipMotorConfig.mSampleAvg;
-      if (mHipMotorConfig.mPIDController.Compute())
-      {
+#if DEBUG_KNEE_MOTOR
+    Serial << "K: T: " << (int)mKneeMotorConfig.mThrottle << ". P: " << mKneeMotorConfig.mSampleAvg << " PID: " << mKneeMotorConfig.mP << ", " << mKneeMotorConfig.mI << ", " << mKneeMotorConfig.mD << "\n";
+#endif    
+    
 #if DEBUG_HIP_MOTOR        
-        Serial << "H: T: " << (int)mKneeMotorConfig.mThrottle << ". P: " << mKneeMotorConfig.mSampleAvg << " PID: " << mKneeMotorConfig.mP << ", " << mKneeMotorConfig.mI << ", " << mKneeMotorConfig.mD << "\n";        
-#endif
-        analogWrite(mHipMotorConfig.mThrottlePin, mHipMotorConfig.mThrottle);
-      }
-    }
+     Serial << "H: T: " << (int)mHipMotorConfig.mThrottle << ". P: " << mHipMotorConfig.mSampleAvg << " PID: " << mHipMotorConfig.mP << ", " << mHipMotorConfig.mI << ", " << mHipMotorConfig.mD << "\n";        
+#endif    
+
+    mHipMotorConfig.Update();
   } 
   
   const tMotorConfig *GetHipMotorConfig()
