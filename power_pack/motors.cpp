@@ -47,11 +47,11 @@ namespace ProsthesisMotors
     mKneeMotorConfig.mLoadInputPin = kneeLoadIn;
   }
   
-  void SetHipMotorPinout(int hitThrottleOut, int hipPressureIn, int hidLoadIn)
+  void SetHipMotorPinout(int hipThrottleOut, int hipPressureIn, int hipLoadIn)
   {
-    mHipMotorConfig.mThrottlePin = hitThrottleOut;
+    mHipMotorConfig.mThrottlePin = hipThrottleOut;
     mHipMotorConfig.mPressureInputPin = hipPressureIn;
-    mHipMotorConfig.mLoadInputPin = hidLoadIn;    
+    mHipMotorConfig.mLoadInputPin = hipLoadIn;    
   }
   
   void ToggleKneeMotorControl(bool toggle)
