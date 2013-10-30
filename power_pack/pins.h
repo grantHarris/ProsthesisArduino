@@ -3,26 +3,43 @@
 
 #define DEVICE_ACTIVE_PIN 13
 
-#define DISPLAY_HIP_PRESSURE_ADDRESS 0x70 //This is the default address of the OpenSegment with both solder jumpers open
+//This is the default address of the OpenSegment with both solder jumpers open
+#define DISPLAY_HIP_PRESSURE_ADDRESS 0x70 
 #define DISPLAY_KNEE_PRESSURE_ADDRESS 0x71
 
-#define MOTOR_KNEE_THROTTLE_PIN 12
+//Pressure pins
 #define MOTOR_KNEE_PRESSURE_IN A3
-#define MOTOR_KNEE_LOAD_IN A5
+#define MOTOR_KNEE_LOAD_IN A4
 
+#define MOTOR_HIP_PRESSURE_IN A5
+#define MOTOR_HIP_LOAD_IN A6
+
+//Rocker & Enable Pins
 #define MOTOR_KNEE_SET_POINT_DOWN_PIN 6
 #define MOTOR_KNEE_SET_POINT_UP_PIN 4
-
-#define MOTOR_HIP_THROTTLE_PIN 10 //Pin 11 is damaged. do not use!!
-#define MOTOR_HIP_PRESSURE_IN A4
-#define MOTOR_HIP_LOAD_IN A6
+#define MOTOR_KNEE_ENABLE_PIN 26
 
 #define MOTOR_HIP_SET_POINT_DOWN_PIN 7
 #define MOTOR_HIP_SET_POINT_UP_PIN 5
+#define MOTOR_HIP_ENABLE_PIN D48
 
-#define POT_BOX_P_PIN A0
+//CCB Pins
+#define MOTOR_KNEE_THROTTLE_PIN 12
+#define MOTOR_KNEE_CONTACTOR_ENABLE_PIN 34
+#define MOTOR_KNEE_CHARGE_ENABLE_PIN 32
+#define MOTOR_KNEE_PWR_LED 30
+#define MOTOR_KNEE_ACTIVE_LED 28
+
+#define MOTOR_HIP_THROTTLE_PIN 11
+#define MOTOR_HIP_CONTACTOR_ENABLE_PIN 40
+#define MOTOR_HIP_CHARGE_ENABLE_PIN 42
+#define MOTOR_HIP_PWR_LED 44
+#define MOTOR_HIP_ACTIVE_LED 46
+
+//POT Box Pins
+#define POT_BOX_P_PIN A2
 #define POT_BOX_I_PIN A1
-#define POT_BOX_D_PIN A2
+#define POT_BOX_D_PIN A0
 #define POT_BOX_INTERRUPT_ID 0
 #define POT_BOX_INTERRUPT_PIN 2
 
