@@ -56,8 +56,8 @@ void setup()
   mDeviceState.IsLoadSense = false;  
   
   ProsthesisMotors::Initialize();
-  ProsthesisMotors::SetKneeMotorPinout(MOTOR_KNEE_THROTTLE_PIN, MOTOR_KNEE_PRESSURE_IN, MOTOR_KNEE_LOAD_IN);
-  ProsthesisMotors::SetHipMotorPinout(MOTOR_HIP_THROTTLE_PIN, MOTOR_KNEE_PRESSURE_IN, MOTOR_HIP_LOAD_IN);
+  ProsthesisMotors::SetKneeMotorPinout(MOTOR_KNEE_THROTTLE_PIN, PRESSURE_IN, MOTOR_KNEE_LOAD_IN);
+  ProsthesisMotors::SetHipMotorPinout(MOTOR_HIP_THROTTLE_PIN, PRESSURE_IN, MOTOR_HIP_LOAD_IN);
   
   ProsthesisMotors::ToggleKneeMotorControl(false);
   ProsthesisMotors::ToggleHipMotorControl(false);
