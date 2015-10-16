@@ -65,11 +65,11 @@ void setup()
   ProsthesisEngineeringInterface::InitializeInterface(MIN_PRESSURE_ADDRESS, MIN_UP_PIN, MIN_DOWN_PIN, MAX_PRESSURE_ADDRESS, MAX_UP_PIN, MIN_DOWN_PIN);
   ProsthesisEngineeringInterface::SetRockerTickAmount(50);
   
-  ProsthesisEngineeringInterface::SetLeftDisplayDataCallback(GetHipPressureSetPoint);
+  ProsthesisEngineeringInterface::SetLeftDisplayDataCallback(GetMinPressureSetPoint);
   ProsthesisEngineeringInterface::SetLeftDisplayRockerUpCallback(MinRockerDown);
   ProsthesisEngineeringInterface::SetLeftDisplayRockerDownCallback(MinRockerDown);
   
-  ProsthesisEngineeringInterface::SetRightDisplayDataCallback(GetKneePressureSetPoint);
+  ProsthesisEngineeringInterface::SetRightDisplayDataCallback(GetMaxPressureSetPoint);
   ProsthesisEngineeringInterface::SetRightDisplayRockerUpCallback(MaxRockerDown);
   ProsthesisEngineeringInterface::SetRightDisplayRockerDownCallback(MaxRockerDown);
   
@@ -336,21 +336,33 @@ void DeviceFaultSlice()
   mLastMillis = millis();  
 }
 
-int GetHipPressureSetPoint()
+/*
+  Should return the lower bound setpoint
+*/
+int GetMinPressureSetPoint()
 {
   return ProsthesisMotors::GetHipMotorConfig()->mPressureSetpoint;
 }
 
-int GetKneePressureSetPoint()
+/*
+  Should return the upper bound setpoint
+*/
+int GetMaxPressureSetPoint()
 {
   return ProsthesisMotors::GetKneeMotorConfig()->mPressureSetpoint;
 }
 
+/*
+  Should set the min setpoint to int amount
+*/
 void MinRockerDown(int amount)
 {
   ProsthesisMotors::ChangeHipMotorSetPoint(amount);
 }
 
+/*
+  Should set the max setpoint to int amount
+*/
 void MaxRockerDown(int amount)
 {
   ProsthesisMotors::ChangeKneeMotorSetPoint(amount);
