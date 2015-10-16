@@ -15,7 +15,7 @@ template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg);
 //Constant terms
 #define PID_POT_SENSITIVITY 0.02
 
-#define SAFE_MAX_PRESSURE_PSI 2500
+#define SAFE_MAX_PRESSURE_PSI 3500
 #define SAFE_MIN_PRESSURE_PSI 0
 
 const float kMinThrottle = 0.02 * 255;
@@ -27,6 +27,9 @@ namespace ProsthesisMotors
   
   int mPotBoxConnected = false;
   int mPotBoxConnectionDirty = false;
+
+  int mMinPressureSetpoint = 0;
+  int mMaxPressureSetpoint = 3500;
   
   void PotBoxConnectionDirtyCB()
   {
@@ -67,7 +70,18 @@ namespace ProsthesisMotors
     mHipMotorConfig.mThrottle = 0;
     analogWrite(mHipMotorConfig.mThrottlePin, mHipMotorConfig.mThrottle);
   }
- 
+
+   int GetMinPressureSetPoint()
+  {
+    return mMinPressureSetpoint;
+  }
+
+  int GetMaxPressureSetPoint()
+  {
+    return mMaxPressureSetpoint;
+  }
+
+
   void UpdateMotors()
   { 
     if (mPotBoxConnectionDirty || !mPotBoxConnected)
@@ -126,19 +140,22 @@ namespace ProsthesisMotors
     return &mHipMotorConfig;  
   }
   
-  void ChangeHipMotorSetPoint(int amount)
-  {
-    mHipMotorConfig.mPressureSetpoint = constrain(amount + mHipMotorConfig.mPressureSetpoint, SAFE_MIN_PRESSURE_PSI, SAFE_MAX_PRESSURE_PSI);
-  }
-  
   const tMotorConfig *GetKneeMotorConfig()
   {
     return &mKneeMotorConfig;
   }  
   
-  void ChangeKneeMotorSetPoint(int amount)
+  void ChangeMinMotorSetPoint(int amount)
   {
-    mKneeMotorConfig.mPressureSetpoint = constrain(amount + mKneeMotorConfig.mPressureSetpoint, SAFE_MIN_PRESSURE_PSI, SAFE_MAX_PRESSURE_PSI);
+    mMinPressureSetpoint = constrain(amount + mMinPressureSetpoint, SAFE_MIN_PRESSURE_PSI, SAFE_MAX_PRESSURE_PSI);
+    mHipMotorConfig.mMinPressureSetpoint = mKneeMotorConfig.mMinPressureSetpoint = mMinPressureSetpoint;
   }
+
+  void ChangeMaxMotorSetPoint(int amount)
+  {
+    mMaxPressureSetpoint = constrain(amount + mMaxPressureSetpoint, SAFE_MIN_PRESSURE_PSI, SAFE_MAX_PRESSURE_PSI);
+    mHipMotorConfig.mMaxPressureSetpoint = mKneeMotorConfig.mMaxPressureSetpoint = mMaxPressureSetpoint;
+  }
+
 }
 

@@ -26,6 +26,8 @@ namespace ProsthesisMotors
     mI(0.0f), 
     mD(0.0f), 
     mPressureSetpoint(1500),
+    mMinPressureSetpoint(0),
+    mMaxPressureSetpoint(3500),
     mThrottle(0),
     mPIDController(&mSampleAvg, &mThrottle, &mPressureSetpoint, 0, 0, 0, DIRECT),
     mMinThrottle(minThrottle)
@@ -42,6 +44,8 @@ namespace ProsthesisMotors
     float mI;
     float mD;
     double mPressureSetpoint;
+    double mMinPressureSetpoint;
+    double mMaxPressureSetpoint;
     double mThrottle;
     bool mActive;
     int mMinThrottle;
@@ -73,9 +77,14 @@ namespace ProsthesisMotors
   void UpdateMotors();
   
   const tMotorConfig *GetHipMotorConfig();
-  void ChangeHipMotorSetPoint(int amount);
   const tMotorConfig *GetKneeMotorConfig();
-  void ChangeKneeMotorSetPoint(int amount);
+
+  int GetMinPressureSetPoint();
+  int GetMaxPressureSetPoint();
+
+  void ChangeMinMotorSetPoint(int amount);
+  void ChangeMaxMotorSetPoint(int amount);
+
 }
 
 #endif //__PROSTHESIS_MOTORS_H__

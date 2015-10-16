@@ -357,7 +357,7 @@ int GetMaxPressureSetPoint()
 */
 void MinRockerDown(int amount)
 {
-  ProsthesisMotors::ChangeHipMotorSetPoint(amount);
+  ProsthesisMotors::ChangeMinMotorSetPoint(amount);
 }
 
 /*
@@ -365,6 +365,6 @@ void MinRockerDown(int amount)
 */
 void MaxRockerDown(int amount)
 {
-  ProsthesisMotors::ChangeKneeMotorSetPoint(amount);
+  ProsthesisMotors::ChangeMaxMotorSetPoint(amount);
 }
 
