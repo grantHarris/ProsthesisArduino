@@ -6,15 +6,15 @@
 #define MIN_PRESSURE_ADDRESS 0x70 //This is the default address of the OpenSegment with both solder jumpers open
 #define MAX_PRESSURE_ADDRESS 0x71
 
+#define PRESSURE_IN A3 //Both motors use same pressure sensor
+
 #define MOTOR_KNEE_THROTTLE_PIN 12
-#define MOTOR_KNEE_PRESSURE_IN A3
 #define MOTOR_KNEE_LOAD_IN A5
 
 #define MAX_DOWN_PIN 6
 #define MAX_UP_PIN 4
 
 #define MOTOR_HIP_THROTTLE_PIN 10 //Pin 11 is damaged. do not use!!
-#define MOTOR_HIP_PRESSURE_IN A4
 #define MOTOR_HIP_LOAD_IN A6
 
 #define MIN_DOWN_PIN 7
