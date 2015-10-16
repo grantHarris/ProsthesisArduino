@@ -57,12 +57,12 @@ void setup()
   
   ProsthesisMotors::Initialize();
   ProsthesisMotors::SetKneeMotorPinout(MOTOR_KNEE_THROTTLE_PIN, MOTOR_KNEE_PRESSURE_IN, MOTOR_KNEE_LOAD_IN);
-  ProsthesisMotors::SetHipMotorPinout(MOTOR_HIP_THROTTLE_PIN, MOTOR_HIP_PRESSURE_IN, MOTOR_HIP_LOAD_IN);
+  ProsthesisMotors::SetHipMotorPinout(MOTOR_HIP_THROTTLE_PIN, MOTOR_KNEE_PRESSURE_IN, MOTOR_HIP_LOAD_IN);
   
   ProsthesisMotors::ToggleKneeMotorControl(false);
   ProsthesisMotors::ToggleHipMotorControl(false);
  
-  ProsthesisEngineeringInterface::InitializeInterface(DISPLAY_HIP_PRESSURE_ADDRESS, MOTOR_HIP_SET_POINT_UP_PIN, MOTOR_HIP_SET_POINT_DOWN_PIN, DISPLAY_KNEE_PRESSURE_ADDRESS, MOTOR_KNEE_SET_POINT_UP_PIN, MOTOR_KNEE_SET_POINT_DOWN_PIN);
+  ProsthesisEngineeringInterface::InitializeInterface(MIN_PRESSURE_ADDRESS, MIN_UP_PIN, MIN_DOWN_PIN, MAX_PRESSURE_ADDRESS, MAX_UP_PIN, MIN_DOWN_PIN);
   ProsthesisEngineeringInterface::SetRockerTickAmount(50);
   
   ProsthesisEngineeringInterface::SetLeftDisplayDataCallback(GetHipPressureSetPoint);
