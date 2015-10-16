@@ -66,12 +66,12 @@ void setup()
   ProsthesisEngineeringInterface::SetRockerTickAmount(50);
   
   ProsthesisEngineeringInterface::SetLeftDisplayDataCallback(GetHipPressureSetPoint);
-  ProsthesisEngineeringInterface::SetLeftDisplayRockerUpCallback(HipRockerDown);
-  ProsthesisEngineeringInterface::SetLeftDisplayRockerDownCallback(HipRockerDown);
+  ProsthesisEngineeringInterface::SetLeftDisplayRockerUpCallback(MinRockerDown);
+  ProsthesisEngineeringInterface::SetLeftDisplayRockerDownCallback(MinRockerDown);
   
   ProsthesisEngineeringInterface::SetRightDisplayDataCallback(GetKneePressureSetPoint);
-  ProsthesisEngineeringInterface::SetRightDisplayRockerUpCallback(KneeRockerDown);
-  ProsthesisEngineeringInterface::SetRightDisplayRockerDownCallback(KneeRockerDown);
+  ProsthesisEngineeringInterface::SetRightDisplayRockerUpCallback(MaxRockerDown);
+  ProsthesisEngineeringInterface::SetRightDisplayRockerDownCallback(MaxRockerDown);
   
 #if AUTONOMOUS_OPERATION
   TransitionToState(Active);
@@ -346,12 +346,12 @@ int GetKneePressureSetPoint()
   return ProsthesisMotors::GetKneeMotorConfig()->mPressureSetpoint;
 }
 
-void HipRockerDown(int amount)
+void MinRockerDown(int amount)
 {
   ProsthesisMotors::ChangeHipMotorSetPoint(amount);
 }
 
-void KneeRockerDown(int amount)
+void MaxRockerDown(int amount)
 {
   ProsthesisMotors::ChangeKneeMotorSetPoint(amount);
 }
