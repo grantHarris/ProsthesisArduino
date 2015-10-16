@@ -71,7 +71,7 @@ namespace ProsthesisMotors
     analogWrite(mHipMotorConfig.mThrottlePin, mHipMotorConfig.mThrottle);
   }
 
-   int GetMinPressureSetPoint()
+  int GetMinPressureSetPoint()
   {
     return mMinPressureSetpoint;
   }
@@ -104,18 +104,18 @@ namespace ProsthesisMotors
       int intP;
       int intI;
       int intD;
-      ProsthesisPotBox::GetPID(&intP, &intI, &intD);
-      mKneeMotorConfig.mP = intP * PID_POT_SENSITIVITY;
-      //GOTODO: Fix Integral parameter      
-      mKneeMotorConfig.mI = 0;//intI * PID_POT_SENSITIVITY;
-      mKneeMotorConfig.mD = intD * PID_POT_SENSITIVITY;
-      mKneeMotorConfig.mPIDController.SetTunings(mKneeMotorConfig.mP, mKneeMotorConfig.mI, mKneeMotorConfig.mD);
+      // ProsthesisPotBox::GetPID(&intP, &intI, &intD);
+      // mKneeMotorConfig.mP = intP * PID_POT_SENSITIVITY;
+      // //GOTODO: Fix Integral parameter      
+      // mKneeMotorConfig.mI = 0;//intI * PID_POT_SENSITIVITY;
+      // mKneeMotorConfig.mD = intD * PID_POT_SENSITIVITY;
+      // mKneeMotorConfig.mPIDController.SetTunings(mKneeMotorConfig.mP, mKneeMotorConfig.mI, mKneeMotorConfig.mD);
       
-      mHipMotorConfig.mP = mKneeMotorConfig.mP;
-      //GOTODO: Fix Integral parameter
-      mHipMotorConfig.mI = 0;//mKneeMotorConfig.mI;
-      mHipMotorConfig.mD = mKneeMotorConfig.mD;
-      mHipMotorConfig.mPIDController.SetTunings(mHipMotorConfig.mP, mHipMotorConfig.mI, mHipMotorConfig.mD);      
+      // mHipMotorConfig.mP = mKneeMotorConfig.mP;
+      // //GOTODO: Fix Integral parameter
+      // mHipMotorConfig.mI = 0;//mKneeMotorConfig.mI;
+      // mHipMotorConfig.mD = mKneeMotorConfig.mD;
+      // mHipMotorConfig.mPIDController.SetTunings(mHipMotorConfig.mP, mHipMotorConfig.mI, mHipMotorConfig.mD);      
       
 #if DEBUG_POT_BOX
       Serial << "Read pot box " << intP << " " << intI << " " << intD << "\n";
