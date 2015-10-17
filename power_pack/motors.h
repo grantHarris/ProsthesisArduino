@@ -14,7 +14,7 @@
 namespace ProsthesisMotors
 {
   typedef struct tMotorConfig {
-    tMotorConfig(int minThrottle) : 
+    tMotorConfig(int minThrottle, int maxThrottle, double scale) : 
     mThrottlePin(-1), 
     mPressureInputPin(-1), 
     mLoadInputPin(-1), 
@@ -26,10 +26,11 @@ namespace ProsthesisMotors
     mMinPressureSetpoint(0),
     mMaxPressureSetpoint(3500),
     mThrottle(0),
-    mMinThrottle(minThrottle)
-    {
-    }
-   
+    mMinThrottle(minThrottle),
+    mMaxThrottle(maxThrottle),
+    mScale(scale){
+    }  
+
     uint8_t mThrottlePin;
     uint8_t mPressureInputPin;
     uint8_t mLoadInputPin;
@@ -42,16 +43,21 @@ namespace ProsthesisMotors
     double mThrottle;
     bool mActive;
     int mMinThrottle;
-    
+    int mMaxThrottle;
+    float mScale;
+
     void Update()
     {
       if (mActive)
       {
         //Use exponential averaging from http://bleaklow.com/2012/06/20/sensor_smoothing_and_optimised_maths_on_the_arduino.html
         mSampleAvg = 0.1 * ANALOG_READ_TO_PRESSURE(analogRead(mPressureInputPin)) + 0.9 * mSampleAvg;
-        mThrottle = ((mMaxPressureSetpoint - mMinPressureSetpoint) * (mSampleAvg) / (255)) + mMinPressureSetpoint;
-        mThrottle = mThrottle > mMinThrottle ? mThrottle : 0;
-        analogWrite(mThrottlePin, mThrottle);
+        mThrottle = (  (mMaxPressureSetpoint - mSampleAvg)  /  (mMaxPressureSetpoint - mMinPressureSetpoint)  ) / 255;
+        
+        mThrottle = (mThrottle > mMaxThrottle) ? 0 : mThrottle;
+        mThrottle = (mThrottle < mMinThrottle) ? 255 : mThrottle;
+
+        analogWrite(mThrottlePin, mThrottle * mScale);
 
       }    
     }

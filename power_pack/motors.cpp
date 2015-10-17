@@ -19,11 +19,12 @@ template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg);
 #define SAFE_MIN_PRESSURE_PSI 0
 
 const float kMinThrottle = 0.02 * 255;
+const float kMaxThrottle = 255;
 
 namespace ProsthesisMotors
 {
-  tMotorConfig mKneeMotorConfig(kMinThrottle);
-  tMotorConfig mHipMotorConfig(kMinThrottle);
+  tMotorConfig mKneeMotorConfig(kMinThrottle, kMaxThrottle, 0.78f);
+  tMotorConfig mHipMotorConfig(kMinThrottle, kMaxThrottle, 1.0f);
   
   int mPotBoxConnected = false;
   int mPotBoxConnectionDirty = false;
