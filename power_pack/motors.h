@@ -51,19 +51,33 @@ namespace ProsthesisMotors
       if (mActive)
       {
         //Use exponential averaging from http://bleaklow.com/2012/06/20/sensor_smoothing_and_optimised_maths_on_the_arduino.html
-        mSampleAvg = 0.1 * ANALOG_READ_TO_PRESSURE(analogRead(mPressureInputPin)) + 0.9 * mSampleAvg;
+        mSampleAvg = ANALOG_READ_TO_PRESSURE(analogRead(mPressureInputPin));
+        
+
+//        Serial.print("Pressure sensor");
+//        Serial.println(mSampleAvg, DEC);
+//        Serial.print("mMaxPressureSetpoint: ");
+//        Serial.println(mMaxPressureSetpoint, DEC);
+//
+//        Serial.print("mMinPressureSetpoint: ");
+//        Serial.println(mMinPressureSetpoint, DEC);
+        
         mThrottle = (  (mMaxPressureSetpoint - mSampleAvg)  /  (mMaxPressureSetpoint - mMinPressureSetpoint)  ) / 255;
         
-        mThrottle = (mThrottle > mMaxThrottle) ? 0 : mThrottle;
-        mThrottle = (mThrottle < mMinThrottle) ? 255 : mThrottle;
+        mThrottle = (mSampleAvg < mMinPressureSetpoint) ? 255 : mThrottle;
+        mThrottle = (mSampleAvg > mMaxPressureSetpoint) ? 0 : mThrottle;
 
+//        Serial.print("Motor value");
+//        Serial.println(mThrottle * mScale, DEC);
+//        Serial.println();
+//        Serial.println();
         analogWrite(mThrottlePin, mThrottle * mScale);
 
       }    
     }
   } tMotorConfig;  
   
-  void Initialize();
+  void Initialize(int minPressureSetpoint, int maxPressureSetpoint);
   void SetKneeMotorPinout(int kneeThrottleOut, int kneePressureIn, int kneeLoadIn);
   void SetHipMotorPinout(int hitThrottleOut, int hipPressureIn, int hidLoadIn);
   

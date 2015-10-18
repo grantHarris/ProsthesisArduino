@@ -1,9 +1,10 @@
 #include <Arduino.h>
-#include <PID_v1.h>
+
 #include <pot_box.h>
 #include <aJSON.h>
 #include <Wire.h>
 #include <command_processor.h>
+#include <EEPROM.h>
 
 #define AUTONOMOUS_OPERATION 1
 
@@ -53,16 +54,24 @@ void setup()
      mDeviceState.LoadPressure[i] = 0.0f;
      mDeviceState.MotorDutyCycle[i] = 0.0f;     
   }
-  mDeviceState.IsLoadSense = false;  
+  mDeviceState.IsLoadSense = false;
+
+  int storedMin = 0;
+  int storedMax = 3500;
   
-  ProsthesisMotors::Initialize();
+  EEPROM.get(LOW_SETPOINT_EEPROM_ADDR, storedMin);
+  EEPROM.get(HIGH_SETPOINT_EEPROM_ADDR, storedMax);
+  storedMin = (storedMin > 0 && storedMin < 3500) ? storedMin :  0;
+  storedMax = (storedMax > 0 && storedMin < 3500) ? storedMax : 3500;
+  ProsthesisMotors::Initialize(storedMin, storedMax);
+
   ProsthesisMotors::SetKneeMotorPinout(MOTOR_KNEE_THROTTLE_PIN, PRESSURE_IN, MOTOR_KNEE_LOAD_IN);
   ProsthesisMotors::SetHipMotorPinout(MOTOR_HIP_THROTTLE_PIN, PRESSURE_IN, MOTOR_HIP_LOAD_IN);
   
   ProsthesisMotors::ToggleKneeMotorControl(false);
   ProsthesisMotors::ToggleHipMotorControl(false);
  
-  ProsthesisEngineeringInterface::InitializeInterface(MIN_PRESSURE_ADDRESS, MIN_UP_PIN, MIN_DOWN_PIN, MAX_PRESSURE_ADDRESS, MAX_UP_PIN, MIN_DOWN_PIN);
+  ProsthesisEngineeringInterface::InitializeInterface(MAX_PRESSURE_ADDRESS, MAX_UP_PIN, MAX_DOWN_PIN, MIN_PRESSURE_ADDRESS, MIN_UP_PIN, MIN_DOWN_PIN);
   ProsthesisEngineeringInterface::SetRockerTickAmount(50);
   
   ProsthesisEngineeringInterface::SetLeftDisplayDataCallback(GetMinPressureSetPoint);
@@ -72,10 +81,13 @@ void setup()
   ProsthesisEngineeringInterface::SetRightDisplayDataCallback(GetMaxPressureSetPoint);
   ProsthesisEngineeringInterface::SetRightDisplayRockerUpCallback(MaxRockerDown);
   ProsthesisEngineeringInterface::SetRightDisplayRockerDownCallback(MaxRockerDown);
+
+
   
 #if AUTONOMOUS_OPERATION
   TransitionToState(Active);
 #endif
+
 }
 
 void loop()

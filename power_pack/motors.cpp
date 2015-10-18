@@ -6,6 +6,7 @@
 #include <pot_box.h>
 #include "motors.h"
 #include "pins.h"
+#include <EEPROM.h>
 
 #if DEBUG_POT_BOX || DEBUG_KNEE_MOTOR || DEBUG_HIP_MOTOR
 //Handy wrapper for using stream-like serial printing
@@ -18,7 +19,7 @@ template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg);
 #define SAFE_MAX_PRESSURE_PSI 3500
 #define SAFE_MIN_PRESSURE_PSI 0
 
-const float kMinThrottle = 0.02 * 255;
+const float kMinThrottle = 0;
 const float kMaxThrottle = 255;
 
 namespace ProsthesisMotors
@@ -29,16 +30,19 @@ namespace ProsthesisMotors
   int mPotBoxConnected = false;
   int mPotBoxConnectionDirty = false;
 
-  int mMinPressureSetpoint = 0;
-  int mMaxPressureSetpoint = 3500;
+  int mMinPressureSetpoint;
+  int mMaxPressureSetpoint;
   
   void PotBoxConnectionDirtyCB()
   {
     mPotBoxConnectionDirty = true;
   }
   
-  void Initialize()
+  void Initialize(int minPressureSetpoint, int maxPressureSetpoint)
   {
+    mMinPressureSetpoint = minPressureSetpoint;
+    mMaxPressureSetpoint = maxPressureSetpoint;
+
     ProsthesisPotBox::Initialize(POT_BOX_INTERRUPT_ID, POT_BOX_INTERRUPT_PIN, POT_BOX_P_PIN, POT_BOX_I_PIN, POT_BOX_D_PIN, 0, 0, 0);
     mPotBoxConnected = ProsthesisPotBox::IsConnected();
     ProsthesisPotBox::SetConnectionDirtyCallback(PotBoxConnectionDirtyCB);
@@ -144,18 +148,26 @@ namespace ProsthesisMotors
   const tMotorConfig *GetKneeMotorConfig()
   {
     return &mKneeMotorConfig;
-  }  
+  }
   
   void ChangeMinMotorSetPoint(int amount)
   {
-    mMinPressureSetpoint = constrain(amount + mMinPressureSetpoint, SAFE_MIN_PRESSURE_PSI, SAFE_MAX_PRESSURE_PSI);
-    mHipMotorConfig.mMinPressureSetpoint = mKneeMotorConfig.mMinPressureSetpoint = mMinPressureSetpoint;
+    int setPoint = constrain(amount + mMinPressureSetpoint, SAFE_MIN_PRESSURE_PSI, SAFE_MAX_PRESSURE_PSI);
+    if(setPoint <= mMaxPressureSetpoint){
+      mMinPressureSetpoint = setPoint;
+      mHipMotorConfig.mMinPressureSetpoint = mKneeMotorConfig.mMinPressureSetpoint = mMinPressureSetpoint;
+      EEPROM.put(LOW_SETPOINT_EEPROM_ADDR, mMinPressureSetpoint);
+    }
   }
 
   void ChangeMaxMotorSetPoint(int amount)
   {
-    mMaxPressureSetpoint = constrain(amount + mMaxPressureSetpoint, SAFE_MIN_PRESSURE_PSI, SAFE_MAX_PRESSURE_PSI);
-    mHipMotorConfig.mMaxPressureSetpoint = mKneeMotorConfig.mMaxPressureSetpoint = mMaxPressureSetpoint;
+    int setPoint = constrain(amount + mMaxPressureSetpoint, SAFE_MIN_PRESSURE_PSI, SAFE_MAX_PRESSURE_PSI);
+    if(setPoint >= mMinPressureSetpoint){
+      mMaxPressureSetpoint = setPoint;
+      mHipMotorConfig.mMaxPressureSetpoint = mKneeMotorConfig.mMaxPressureSetpoint = mMaxPressureSetpoint;
+      EEPROM.put(HIGH_SETPOINT_EEPROM_ADDR, mMaxPressureSetpoint);
+    }
   }
 
 }
