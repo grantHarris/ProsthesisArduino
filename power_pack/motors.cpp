@@ -42,7 +42,9 @@ namespace ProsthesisMotors
   {
     mMinPressureSetpoint = minPressureSetpoint;
     mMaxPressureSetpoint = maxPressureSetpoint;
-
+    mHipMotorConfig.mMinPressureSetpoint = mKneeMotorConfig.mMinPressureSetpoint = mMinPressureSetpoint;
+    mHipMotorConfig.mMaxPressureSetpoint = mKneeMotorConfig.mMaxPressureSetpoint = mMaxPressureSetpoint;
+    
     ProsthesisPotBox::Initialize(POT_BOX_INTERRUPT_ID, POT_BOX_INTERRUPT_PIN, POT_BOX_P_PIN, POT_BOX_I_PIN, POT_BOX_D_PIN, 0, 0, 0);
     mPotBoxConnected = ProsthesisPotBox::IsConnected();
     ProsthesisPotBox::SetConnectionDirtyCallback(PotBoxConnectionDirtyCB);

@@ -61,12 +61,18 @@ namespace ProsthesisMotors
 //
 //        Serial.print("mMinPressureSetpoint: ");
 //        Serial.println(mMinPressureSetpoint, DEC);
-        
-        mThrottle = (  (mMaxPressureSetpoint - mSampleAvg)  /  (mMaxPressureSetpoint - mMinPressureSetpoint)  ) / 255;
-        
-        mThrottle = (mSampleAvg < mMinPressureSetpoint) ? 255 : mThrottle;
-        mThrottle = (mSampleAvg > mMaxPressureSetpoint) ? 0 : mThrottle;
+//        
+        mThrottle = (  ((mMaxPressureSetpoint - mSampleAvg)  /  (mMaxPressureSetpoint - mMinPressureSetpoint)) * 255);
+//        Serial.print("from line: ");
+//        Serial.println(mThrottle, DEC);
+//        Serial.println(mSampleAvg, DEC);
 
+        //mThrottle = (mSampleAvg < mMinPressureSetpoint) ? 255 : mThrottle;
+        //mThrottle = (mSampleAvg > mMaxPressureSetpoint) ? 0 : mThrottle;
+        mThrottle = (mThrottle > 255) ? 255: mThrottle;
+        mThrottle = (mThrottle < 0) ? 0: mThrottle;
+
+//
 //        Serial.print("Motor value");
 //        Serial.println(mThrottle * mScale, DEC);
 //        Serial.println();
